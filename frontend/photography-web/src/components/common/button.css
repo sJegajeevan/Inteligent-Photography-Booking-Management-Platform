@@ -1,0 +1,17 @@
+.app-button {
+  background: linear-gradient(135deg, #7184d8, #9aa9ed);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  padding: 13px 25px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 7px 9px 18px rgba(85, 97, 166, 0.28);
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.app-button:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}

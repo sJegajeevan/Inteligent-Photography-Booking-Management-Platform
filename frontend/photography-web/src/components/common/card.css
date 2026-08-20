@@ -1,0 +1,39 @@
+.app-card {
+  --card-rotate: 0deg;
+  --card-x: 0px;
+  --card-y: 0px;
+  --card-scale: 1;
+  background: linear-gradient(155deg, #18211f 0%, #080b0d 72%);
+  border: 1px solid rgba(214, 227, 255, 0.09);
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 25px;
+  box-shadow: 0 16px 28px rgba(5, 8, 18, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  transform: translate(var(--card-x), var(--card-y)) rotate(var(--card-rotate)) scale(var(--card-scale));
+  transition: transform 0.45s cubic-bezier(.22,.75,.25,1), box-shadow 0.4s ease, border-color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.app-card::before {
+  content: "";
+  position: absolute;
+  inset: -28% auto auto -14%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(105, 214, 255, 0.12) 0%, rgba(105, 214, 255, 0) 68%);
+  pointer-events: none;
+}
+
+.app-card:hover {
+  transform: translate(var(--card-x), calc(var(--card-y) - 12px)) rotate(0deg) scale(1.02);
+  box-shadow: 0 28px 36px rgba(4, 8, 20, 0.54), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  border-color: rgba(150, 197, 255, 0.45);
+}
+
+.app-card:focus-visible {
+  outline: 3px solid #95f7c6;
+  outline-offset: 5px;
+}

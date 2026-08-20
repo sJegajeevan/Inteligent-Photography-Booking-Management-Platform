@@ -1,0 +1,48 @@
+.header {
+  background: rgba(251, 250, 255, 0.74);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  padding: 14px 0;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-name {
+  font-family: "DM Sans", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+
+.brand-icon {
+  color: var(--primary-dark);
+  margin-right: 8px;
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+}
+
+.nav a {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.header-button {
+  background: linear-gradient(135deg, #7184d8, #9aa9ed);
+  color: white;
+  border: 1px solid rgba(255,255,255,.55);
+  padding: 11px 20px;
+  border-radius: 999px;
+  box-shadow: 5px 7px 16px rgba(85, 97, 166, .24);
+  font-weight: 700;
+}
