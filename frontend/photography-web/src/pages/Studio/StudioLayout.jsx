@@ -7,6 +7,7 @@ const navigation = [
   ["/studio/availability", "Availability", "calendar"],
   ["/studio/portfolio", "Portfolio", "portfolio"],
   ["/studio/services", "Services", "services"],
+  ["/studio/packages", "Packages", "packages"],
 ];
 
 const titles = {
@@ -15,6 +16,7 @@ const titles = {
   availability: "Availability",
   portfolio: "Portfolio",
   services: "Services",
+  packages: "Packages",
 };
 
 export function StudioIcon({ name }) {
@@ -24,6 +26,7 @@ export function StudioIcon({ name }) {
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></>,
     portfolio: <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 20"/></>,
     services: <><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7"/><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 12h18M10 12v2h4v-2"/></>,
+    packages: <><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></>,
     logout: <><path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></>,
     bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></>,
     menu: <path d="M4 7h16M4 12h16M4 17h16"/>,

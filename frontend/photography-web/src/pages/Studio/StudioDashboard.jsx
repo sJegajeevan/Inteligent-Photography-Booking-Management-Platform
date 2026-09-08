@@ -3,6 +3,7 @@ import StudioProfile from "./StudioProfile";
 import StudioPortfolio from "./StudioPortfolio";
 import StudioServices from "./StudioServices";
 import StudioAvailability from "./StudioAvailability";
+import StudioPackages from "./StudioPackages";
 import StudioDashboardOverview from "./StudioDashboardOverview";
 import StudioLayout from "./StudioLayout";
 import { useAuth } from "../../context/useAuth";
@@ -10,6 +11,8 @@ import { deleteStudioProfile, getStudioProfile, saveStudioProfile } from "../../
 import { createPortfolioItem, deletePortfolioItem, getStudioPortfolio, updatePortfolioItem } from "../../services/studioPortfolioService";
 import { createStudioService, deleteStudioService, getStudioServices, updateStudioService } from "../../services/studioServicesService";
 import { createStudioAvailability, deleteStudioAvailability, getStudioAvailability, updateStudioAvailability } from "../../services/studioAvailabilityService";
+import { createPhotographyPackage, deletePhotographyPackage, getPhotographyPackages, updatePhotographyPackage } from "../../services/photographyPackagesService";
+import { createPackageAddon, deletePackageAddon, getPackageAddons, updatePackageAddon } from "../../services/packageAddonsService";
 import "./StudioDashboard.css";
 
 const profileCompletionFields = ["studioName", "description", "location", "address", "contactNumber", "email", "experienceYears", "photographyTypes", "startingPrice", "logoUrl", "coverPhotoUrl"];
@@ -18,6 +21,7 @@ const pageDetails = {
   availability: ["AVAILABILITY", "Availability", "Manage the dates and times when clients can book your studio."],
   portfolio: ["PORTFOLIO", "Portfolio", "Showcase your best photography work."],
   services: ["SERVICES", "Services", "Manage the photography services and packages you offer."],
+  packages: ["PACKAGES", "Packages", "Create and manage photography packages for your customers."],
 };
 
 function hasProfileValue(profile, field) {
@@ -41,6 +45,9 @@ function StudioDashboard({ page = "dashboard" }) {
   const [availability, setAvailability] = useState([]);
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(true);
   const [availabilityError, setAvailabilityError] = useState("");
+  const [packages, setPackages] = useState([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
+  const [packagesError, setPackagesError] = useState("");
 
   const loadProfile = useCallback(async () => {
     setIsProfileLoading(true); setProfileError("");
@@ -66,16 +73,18 @@ function StudioDashboard({ page = "dashboard" }) {
     catch (error) { setAvailabilityError(error.message || "Unable to load studio availability."); }
     finally { setIsAvailabilityLoading(false); }
   }, [token]);
+  const loadPackages = useCallback(async () => { setPackagesLoading(true); setPackagesError(""); try { const items = await getPhotographyPackages(token); setPackages(Array.isArray(items) ? items : []); } catch (error) { setPackagesError(error.message || "Unable to load packages."); } finally { setPackagesLoading(false); } }, [token]);
 
   useEffect(() => {
     const loadTimer = window.setTimeout(() => {
       loadProfile();
       if (page === "dashboard" || page === "portfolio") loadPortfolio();
-      if (page === "dashboard" || page === "services") loadServices();
+      if (page === "dashboard" || page === "services" || page === "packages") loadServices();
       if (page === "dashboard" || page === "availability") loadAvailability();
+      if (page === "packages") loadPackages();
     }, 0);
     return () => window.clearTimeout(loadTimer);
-  }, [page, loadProfile, loadPortfolio, loadServices, loadAvailability]);
+  }, [page, loadProfile, loadPortfolio, loadServices, loadAvailability, loadPackages]);
 
   const saveProfile = async (values) => { await saveStudioProfile(token, values); await loadProfile(); };
   const deleteProfile = async () => { await deleteStudioProfile(token); setProfile(null); };
@@ -88,6 +97,13 @@ function StudioDashboard({ page = "dashboard" }) {
   const addAvailability = async (values) => { const created = await createStudioAvailability(token, values); setAvailability((current) => [...current, created].sort((a, b) => a.date.localeCompare(b.date))); };
   const editAvailability = async (id, values) => { const updated = await updateStudioAvailability(token, id, values); setAvailability((current) => current.map((item) => item.id === id ? updated : item).sort((a, b) => a.date.localeCompare(b.date))); };
   const removeAvailability = async (id) => { await deleteStudioAvailability(token, id); setAvailability((current) => current.filter((item) => item.id !== id)); };
+  const addPackage = async (values) => { const created = await createPhotographyPackage(token, values); setPackages((current) => [created, ...current]); };
+  const editPackage = async (id, values) => { const updated = await updatePhotographyPackage(token, id, values); setPackages((current) => current.map((item) => item.id === id ? updated : item)); };
+  const removePackage = async (id) => { await deletePhotographyPackage(token, id); setPackages((current) => current.filter((item) => item.id !== id)); };
+  const loadPackageAddons = async (packageId) => getPackageAddons(token, packageId);
+  const addPackageAddon = async (packageId, values) => createPackageAddon(token, packageId, values);
+  const editPackageAddon = async (packageId, addonId, values) => updatePackageAddon(token, packageId, addonId, values);
+  const removePackageAddon = async (packageId, addonId) => deletePackageAddon(token, packageId, addonId);
 
   const completedProfileFields = profileCompletionFields.filter((field) => hasProfileValue(profile, field)).length;
   const profileCompletion = Math.round((completedProfileFields / profileCompletionFields.length) * 100);
@@ -100,6 +116,7 @@ function StudioDashboard({ page = "dashboard" }) {
       {page === "availability" && <section className="studio-route-content"><StudioAvailability items={availability} isLoading={isAvailabilityLoading} error={availabilityError} onRetry={loadAvailability} onCreate={addAvailability} onUpdate={editAvailability} onDelete={removeAvailability} /></section>}
       {page === "portfolio" && <div className="studio-route-content"><StudioPortfolio items={portfolioItems} isLoading={isPortfolioLoading} error={portfolioError} onRetry={loadPortfolio} onCreate={addPortfolioItem} onUpdate={editPortfolioItem} onDelete={removePortfolioItem} /></div>}
       {page === "services" && <div className="studio-route-content"><StudioServices services={services} isLoading={areServicesLoading} error={servicesError} onRetry={loadServices} onCreate={addService} onUpdate={editService} onDelete={removeService} /></div>}
+      {page === "packages" && <div className="studio-route-content"><StudioPackages packages={packages} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} packagesLoading={packagesLoading} error={packagesError} onRetry={loadPackages} onCreate={addPackage} onUpdate={editPackage} onDelete={removePackage} onLoadAddons={loadPackageAddons} onCreateAddon={addPackageAddon} onUpdateAddon={editPackageAddon} onDeleteAddon={removePackageAddon} /></div>}
   </StudioLayout>;
 }
 

@@ -44,6 +44,7 @@ function AppContent() {
     "/studio/availability": "availability",
     "/studio/portfolio": "portfolio",
     "/studio/services": "services",
+    "/studio/packages": "packages",
   };
   if (studioPages[path]) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page={studioPages[path]} /></ProtectedRoute>;
   if (path.startsWith("/studio/")) {

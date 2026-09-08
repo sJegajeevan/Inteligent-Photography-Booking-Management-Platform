@@ -18,6 +18,9 @@ builder.Services.AddScoped<PhotographyBooking.Api.Services.StudioService>();
 builder.Services.AddScoped<PhotographyBooking.Api.Services.StudioPortfolioService>();
 builder.Services.AddScoped<PhotographyBooking.Api.Services.StudioServicesCrudService>();
 builder.Services.AddScoped<PhotographyBooking.Api.Services.StudioAvailabilityService>();
+builder.Services.AddScoped<PhotographyBooking.Api.Services.PhotographyPackageService>();
+builder.Services.AddScoped<PhotographyBooking.Api.Services.PackageAddonService>();
+builder.Services.AddScoped<PhotographyBooking.Api.Services.PackagePriceCalculationService>();
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"] ?? throw new InvalidOperationException("Jwt:Key is required.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
@@ -92,6 +95,34 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE "StudioAvailabilities" ADD COLUMN IF NOT EXISTS "EndTime" time without time zone;
         ALTER TABLE "StudioAvailabilities" ADD COLUMN IF NOT EXISTS "Notes" character varying(1000);
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_StudioAvailabilities_StudioId_Date" ON "StudioAvailabilities" ("StudioId", "Date");
+
+        CREATE TABLE IF NOT EXISTS "PhotographyPackages" (
+            "Id" uuid PRIMARY KEY, "StudioId" uuid NOT NULL, "PackageName" character varying(160) NOT NULL,
+            "Category" character varying(100) NOT NULL, "Description" character varying(2000) NOT NULL DEFAULT '',
+            "Price" numeric(12,2) NOT NULL, "Duration" character varying(100) NOT NULL, "NumberOfPhotographers" integer NOT NULL,
+            "CoverImageUrl" character varying(2048) NOT NULL DEFAULT '', "Status" character varying(20) NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL, "UpdatedAt" timestamp with time zone NOT NULL);
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "Name" character varying(160) NOT NULL DEFAULT '';
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "BasePrice" numeric(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "DurationHours" numeric(5,2) NOT NULL DEFAULT 0;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "EditedPhotoCount" integer NOT NULL DEFAULT 0;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "AlbumIncluded" boolean NOT NULL DEFAULT false;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "VideoIncluded" boolean NOT NULL DEFAULT false;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "ExtraHourRate" numeric(12,2) NOT NULL DEFAULT 0;
+        ALTER TABLE "PhotographyPackages" ADD COLUMN IF NOT EXISTS "AdditionalPhotographerRate" numeric(12,2) NOT NULL DEFAULT 0;
+        UPDATE "PhotographyPackages" SET "Name" = "PackageName" WHERE "Name" = '' AND "PackageName" <> '';
+        UPDATE "PhotographyPackages" SET "BasePrice" = "Price" WHERE "BasePrice" = 0 AND "Price" <> 0;
+        UPDATE "PhotographyPackages" SET "DurationHours" = NULLIF(regexp_replace("Duration", '[^0-9.]', '', 'g'), '')::numeric WHERE "DurationHours" = 0 AND "Duration" ~ '[0-9]';
+        CREATE INDEX IF NOT EXISTS "IX_PhotographyPackages_StudioId" ON "PhotographyPackages" ("StudioId");
+        CREATE TABLE IF NOT EXISTS "PackageAddons" (
+            "Id" uuid PRIMARY KEY, "PackageId" uuid NOT NULL, "Name" character varying(160) NOT NULL,
+            "Description" character varying(1000) NOT NULL DEFAULT '', "Price" numeric(12,2) NOT NULL,
+            "CreatedAt" timestamp with time zone NOT NULL, "UpdatedAt" timestamp with time zone NOT NULL,
+            CONSTRAINT "FK_PackageAddons_PhotographyPackages_PackageId" FOREIGN KEY ("PackageId") REFERENCES "PhotographyPackages" ("Id") ON DELETE CASCADE);
+        CREATE INDEX IF NOT EXISTS "IX_PackageAddons_PackageId" ON "PackageAddons" ("PackageId");
+        CREATE TABLE IF NOT EXISTS "PhotographyPackageServices" (
+            "PhotographyPackageId" uuid NOT NULL, "StudioServiceId" uuid NOT NULL,
+            PRIMARY KEY ("PhotographyPackageId", "StudioServiceId"));
         """);
 }
 

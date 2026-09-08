@@ -10,6 +10,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<StudioPortfolioImage> StudioPortfolioImages { get; set; }
     public DbSet<StudioService> StudioServices { get; set; }
     public DbSet<StudioAvailability> StudioAvailabilities { get; set; }
+    public DbSet<PhotographyPackage> PhotographyPackages { get; set; }
+    public DbSet<PhotographyPackageService> PhotographyPackageServices { get; set; }
+    public DbSet<PackageAddon> PackageAddons { get; set; }
 
     public DbSet<User> Users { get; set; }
 
@@ -69,6 +72,37 @@ public class ApplicationDbContext : DbContext
             entity.Property(a => a.Notes).HasMaxLength(1000);
             entity.HasIndex(a => new { a.StudioId, a.Date }).IsUnique();
             entity.HasOne(a => a.Studio).WithMany().HasForeignKey(a => a.StudioId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<PhotographyPackage>(entity =>
+        {
+            entity.Property(p => p.Name).HasMaxLength(160);
+            entity.Property(p => p.BasePrice).HasPrecision(12, 2);
+            entity.Property(p => p.ExtraHourRate).HasPrecision(12, 2);
+            entity.Property(p => p.AdditionalPhotographerRate).HasPrecision(12, 2);
+            entity.Property(p => p.DurationHours).HasPrecision(5, 2);
+            entity.Property(p => p.PackageName).HasMaxLength(160);
+            entity.Property(p => p.Category).HasMaxLength(100);
+            entity.Property(p => p.Description).HasMaxLength(2000);
+            entity.Property(p => p.Price).HasPrecision(12, 2);
+            entity.Property(p => p.Duration).HasMaxLength(100);
+            entity.Property(p => p.CoverImageUrl).HasMaxLength(2048);
+            entity.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
+            entity.HasIndex(p => p.StudioId);
+            entity.HasOne(p => p.Studio).WithMany().HasForeignKey(p => p.StudioId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<PhotographyPackageService>(entity =>
+        {
+            entity.HasKey(link => new { link.PhotographyPackageId, link.StudioServiceId });
+            entity.HasOne(link => link.PhotographyPackage).WithMany(package => package.PackageServices).HasForeignKey(link => link.PhotographyPackageId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(link => link.StudioService).WithMany().HasForeignKey(link => link.StudioServiceId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<PackageAddon>(entity =>
+        {
+            entity.Property(addon => addon.Name).HasMaxLength(160);
+            entity.Property(addon => addon.Description).HasMaxLength(1000);
+            entity.Property(addon => addon.Price).HasPrecision(12, 2);
+            entity.HasIndex(addon => addon.PackageId);
+            entity.HasOne(addon => addon.Package).WithMany(package => package.Addons).HasForeignKey(addon => addon.PackageId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
