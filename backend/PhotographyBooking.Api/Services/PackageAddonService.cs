@@ -13,7 +13,8 @@ public class PackageAddonService
     public async Task<IReadOnlyList<PackageAddonResponseDto>?> GetMineAsync(int userId, Guid packageId)
     {
         if (!await OwnsPackageAsync(userId, packageId)) return null;
-        return await _db.PackageAddons.AsNoTracking().Where(addon => addon.PackageId == packageId).OrderBy(addon => addon.Name).Select(ToResponse).ToListAsync();
+        var addons = await _db.PackageAddons.AsNoTracking().Where(addon => addon.PackageId == packageId).OrderBy(addon => addon.Name).ToListAsync();
+        return addons.Select(ToResponse).ToList();
     }
 
     public async Task<(PackageAddonResponseDto? Addon, string? Error)> CreateAsync(int userId, Guid packageId, PackageAddonRequestDto request)

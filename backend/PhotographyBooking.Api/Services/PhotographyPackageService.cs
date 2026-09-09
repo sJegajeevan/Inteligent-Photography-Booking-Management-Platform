@@ -4,6 +4,7 @@ using PhotographyBooking.Api.DTOs.PackageAddons;
 using PhotographyBooking.Api.DTOs.PhotographyPackages;
 using PhotographyBooking.Api.Models;
 using PackageServiceLink = PhotographyBooking.Api.Models.PhotographyPackageService;
+using StudioServiceModel = PhotographyBooking.Api.Models.StudioService;
 
 namespace PhotographyBooking.Api.Services;
 
@@ -92,7 +93,7 @@ public class PhotographyPackageService
     }
 
     private IQueryable<PhotographyPackage> OwnedQuery(int userId) => _db.PhotographyPackages.Include(p => p.PackageServices).ThenInclude(link => link.StudioService).Include(p => p.Addons).Where(p => p.Studio.UserId == userId);
-    private async Task<List<StudioService>?> GetOwnedServicesAsync(Guid studioId, IEnumerable<Guid> serviceIds)
+    private async Task<List<StudioServiceModel>?> GetOwnedServicesAsync(Guid studioId, IEnumerable<Guid> serviceIds)
     {
         var ids = serviceIds.Distinct().ToList();
         if (ids.Count == 0) return null;

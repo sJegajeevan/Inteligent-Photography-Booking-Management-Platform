@@ -101,9 +101,20 @@ function StudioDashboard({ page = "dashboard" }) {
   const editPackage = async (id, values) => { const updated = await updatePhotographyPackage(token, id, values); setPackages((current) => current.map((item) => item.id === id ? updated : item)); };
   const removePackage = async (id) => { await deletePhotographyPackage(token, id); setPackages((current) => current.filter((item) => item.id !== id)); };
   const loadPackageAddons = async (packageId) => getPackageAddons(token, packageId);
-  const addPackageAddon = async (packageId, values) => createPackageAddon(token, packageId, values);
-  const editPackageAddon = async (packageId, addonId, values) => updatePackageAddon(token, packageId, addonId, values);
-  const removePackageAddon = async (packageId, addonId) => deletePackageAddon(token, packageId, addonId);
+  const addPackageAddon = async (packageId, values) => {
+    const saved = await createPackageAddon(token, packageId, values);
+    setPackages((current) => current.map((item) => item.id === packageId ? { ...item, addons: [...(item.addons || []), saved].sort((a, b) => a.name.localeCompare(b.name)) } : item));
+    return saved;
+  };
+  const editPackageAddon = async (packageId, addonId, values) => {
+    const saved = await updatePackageAddon(token, packageId, addonId, values);
+    setPackages((current) => current.map((item) => item.id === packageId ? { ...item, addons: (item.addons || []).map((addon) => addon.id === addonId ? saved : addon).sort((a, b) => a.name.localeCompare(b.name)) } : item));
+    return saved;
+  };
+  const removePackageAddon = async (packageId, addonId) => {
+    await deletePackageAddon(token, packageId, addonId);
+    setPackages((current) => current.map((item) => item.id === packageId ? { ...item, addons: (item.addons || []).filter((addon) => addon.id !== addonId) } : item));
+  };
 
   const completedProfileFields = profileCompletionFields.filter((field) => hasProfileValue(profile, field)).length;
   const profileCompletion = Math.round((completedProfileFields / profileCompletionFields.length) * 100);
