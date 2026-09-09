@@ -30,6 +30,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options => options.AddPolicy("FlutterDevelopment", policy =>
+        policy.WithOrigins("http://localhost:5174").WithMethods("GET").AllowAnyHeader()));
+}
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -105,6 +111,11 @@ if (app.Environment.IsDevelopment())
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("FlutterDevelopment");
 }
 
 app.UseAuthentication();
