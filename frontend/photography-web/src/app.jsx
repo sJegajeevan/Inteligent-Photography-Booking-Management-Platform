@@ -45,8 +45,12 @@ function AppContent() {
     "/studio/portfolio": "portfolio",
     "/studio/services": "services",
     "/studio/packages": "packages",
+    "/studio/bookings": "bookings",
+    "/studio/schedule": "schedule",
   };
   if (studioPages[path]) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page={studioPages[path]} /></ProtectedRoute>;
+  const bookingDetailsMatch = path.match(/^\/studio\/bookings\/(\d+)$/);
+  if (bookingDetailsMatch) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page="bookingDetails" bookingId={bookingDetailsMatch[1]} /></ProtectedRoute>;
   if (path.startsWith("/studio/")) {
     window.location.replace("/studio/dashboard");
     return null;

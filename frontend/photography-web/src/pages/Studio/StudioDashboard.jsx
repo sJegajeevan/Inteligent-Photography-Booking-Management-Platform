@@ -4,6 +4,9 @@ import StudioPortfolio from "./StudioPortfolio";
 import StudioServices from "./StudioServices";
 import StudioAvailability from "./StudioAvailability";
 import StudioPackages from "./StudioPackages";
+import StudioBookings from "./StudioBookings";
+import StudioBookingDetails from "./StudioBookingDetails";
+import StudioSchedule from "./StudioSchedule";
 import StudioDashboardOverview from "./StudioDashboardOverview";
 import StudioLayout from "./StudioLayout";
 import { useAuth } from "../../context/useAuth";
@@ -13,7 +16,9 @@ import { createStudioService, deleteStudioService, getStudioServices, updateStud
 import { createStudioAvailability, deleteStudioAvailability, getStudioAvailability, updateStudioAvailability } from "../../services/studioAvailabilityService";
 import { createPhotographyPackage, deletePhotographyPackage, getPhotographyPackages, updatePhotographyPackage } from "../../services/photographyPackagesService";
 import { createPackageAddon, deletePackageAddon, getPackageAddons, updatePackageAddon } from "../../services/packageAddonsService";
+import { getBookings } from "../../services/bookingService";
 import "./StudioDashboard.css";
+import "./BookingManagement.css";
 
 const profileCompletionFields = ["studioName", "description", "location", "address", "contactNumber", "email", "experienceYears", "photographyTypes", "startingPrice", "logoUrl", "coverPhotoUrl"];
 const pageDetails = {
@@ -30,7 +35,7 @@ function hasProfileValue(profile, field) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function StudioDashboard({ page = "dashboard" }) {
+function StudioDashboard({ page = "dashboard", bookingId }) {
   const { token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [failedHeroLogoUrl, setFailedHeroLogoUrl] = useState("");
@@ -48,6 +53,9 @@ function StudioDashboard({ page = "dashboard" }) {
   const [packages, setPackages] = useState([]);
   const [packagesLoading, setPackagesLoading] = useState(true);
   const [packagesError, setPackagesError] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState("");
 
   const loadProfile = useCallback(async () => {
     setIsProfileLoading(true); setProfileError("");
@@ -74,6 +82,7 @@ function StudioDashboard({ page = "dashboard" }) {
     finally { setIsAvailabilityLoading(false); }
   }, [token]);
   const loadPackages = useCallback(async () => { setPackagesLoading(true); setPackagesError(""); try { const items = await getPhotographyPackages(token); setPackages(Array.isArray(items) ? items : []); } catch (error) { setPackagesError(error.message || "Unable to load packages."); } finally { setPackagesLoading(false); } }, [token]);
+  const loadBookings = useCallback(async () => { setBookingsLoading(true); setBookingsError(""); try { setBookings(await getBookings(token)); } catch (error) { setBookingsError(error.message || "Unable to load bookings."); } finally { setBookingsLoading(false); } }, [token]);
 
   useEffect(() => {
     const loadTimer = window.setTimeout(() => {
@@ -82,9 +91,10 @@ function StudioDashboard({ page = "dashboard" }) {
       if (page === "dashboard" || page === "services" || page === "packages") loadServices();
       if (page === "dashboard" || page === "availability") loadAvailability();
       if (page === "packages") loadPackages();
+      if (page === "dashboard" || page === "bookings" || page === "schedule") loadBookings();
     }, 0);
     return () => window.clearTimeout(loadTimer);
-  }, [page, loadProfile, loadPortfolio, loadServices, loadAvailability, loadPackages]);
+  }, [page, loadProfile, loadPortfolio, loadServices, loadAvailability, loadPackages, loadBookings]);
 
   const saveProfile = async (values) => { await saveStudioProfile(token, values); await loadProfile(); };
   const deleteProfile = async () => { await deleteStudioProfile(token); setProfile(null); };
@@ -122,12 +132,15 @@ function StudioDashboard({ page = "dashboard" }) {
 
   return <StudioLayout page={page} profile={profile}>
       {heading && <section className="studio-route-heading"><p className="studio-kicker">{heading[0]}</p><h1>{heading[1]}</h1><p>{heading[2]}</p></section>}
-      {page === "dashboard" && <StudioDashboardOverview profile={profile} profileLoading={isProfileLoading} profileError={profileError} profileCompletion={profileCompletion} portfolio={portfolioItems} portfolioLoading={isPortfolioLoading} portfolioError={portfolioError} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} availability={availability} availabilityLoading={isAvailabilityLoading} availabilityError={availabilityError} failedLogoUrl={failedHeroLogoUrl} onLogoError={setFailedHeroLogoUrl} />}
+      {page === "dashboard" && <StudioDashboardOverview profile={profile} profileLoading={isProfileLoading} profileError={profileError} profileCompletion={profileCompletion} portfolio={portfolioItems} portfolioLoading={isPortfolioLoading} portfolioError={portfolioError} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} availability={availability} availabilityLoading={isAvailabilityLoading} availabilityError={availabilityError} bookings={bookings} bookingsLoading={bookingsLoading} bookingsError={bookingsError} failedLogoUrl={failedHeroLogoUrl} onLogoError={setFailedHeroLogoUrl} />}
       {page === "profile" && <section className="studio-layout studio-route-content"><StudioProfile profile={profile} isLoading={isProfileLoading} error={profileError} onSave={saveProfile} onDelete={deleteProfile} onRetry={loadProfile} /></section>}
       {page === "availability" && <section className="studio-route-content"><StudioAvailability items={availability} isLoading={isAvailabilityLoading} error={availabilityError} onRetry={loadAvailability} onCreate={addAvailability} onUpdate={editAvailability} onDelete={removeAvailability} /></section>}
       {page === "portfolio" && <div className="studio-route-content"><StudioPortfolio items={portfolioItems} isLoading={isPortfolioLoading} error={portfolioError} onRetry={loadPortfolio} onCreate={addPortfolioItem} onUpdate={editPortfolioItem} onDelete={removePortfolioItem} /></div>}
       {page === "services" && <div className="studio-route-content"><StudioServices services={services} isLoading={areServicesLoading} error={servicesError} onRetry={loadServices} onCreate={addService} onUpdate={editService} onDelete={removeService} /></div>}
       {page === "packages" && <div className="studio-route-content"><StudioPackages packages={packages} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} packagesLoading={packagesLoading} error={packagesError} onRetry={loadPackages} onCreate={addPackage} onUpdate={editPackage} onDelete={removePackage} onLoadAddons={loadPackageAddons} onCreateAddon={addPackageAddon} onUpdateAddon={editPackageAddon} onDeleteAddon={removePackageAddon} /></div>}
+      {page === "bookings" && <div className="studio-route-content"><StudioBookings bookings={bookings} isLoading={bookingsLoading} error={bookingsError} onRetry={loadBookings} /></div>}
+      {page === "bookingDetails" && <div className="studio-route-content"><StudioBookingDetails bookingId={bookingId} /></div>}
+      {page === "schedule" && <div className="studio-route-content"><StudioSchedule bookings={bookings} isLoading={bookingsLoading} error={bookingsError} onRetry={loadBookings} /></div>}
   </StudioLayout>;
 }
 

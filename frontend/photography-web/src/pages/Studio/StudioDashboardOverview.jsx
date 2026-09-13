@@ -25,13 +25,20 @@ function LoadValue({ loading, error, children }) {
 
 export default function StudioDashboardOverview(props) {
   const [failedCoverUrl, setFailedCoverUrl] = useState("");
-  const { profile, profileLoading, profileError, profileCompletion, portfolio, portfolioLoading, portfolioError, services, servicesLoading, servicesError, availability, availabilityLoading, availabilityError, failedLogoUrl, onLogoError } = props;
+  const { profile, profileLoading, profileError, profileCompletion, portfolio, portfolioLoading, portfolioError, services, servicesLoading, servicesError, availability, availabilityLoading, availabilityError, bookings, bookingsLoading, bookingsError, failedLogoUrl, onLogoError } = props;
   const portfolioItems = Array.isArray(portfolio) ? portfolio.filter(Boolean) : [];
   const serviceItems = Array.isArray(services) ? services.filter(Boolean) : [];
   const availabilityItems = Array.isArray(availability) ? availability.filter(Boolean) : [];
+  const bookingItems = Array.isArray(bookings) ? bookings.filter(Boolean) : [];
   const studioName = profile?.studioName?.trim() || "Your Studio";
   const upcoming = availabilityItems.filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(dateValue(item.date)) && dateValue(item.date) >= localToday()).sort((a, b) => dateValue(a.date).localeCompare(dateValue(b.date)));
   const recentPortfolio = [...portfolioItems].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 4);
+  const bookingCounts = {
+    pending: bookingItems.filter((item) => item.status === "Pending").length,
+    confirmed: bookingItems.filter((item) => item.status === "Confirmed").length,
+    completed: bookingItems.filter((item) => item.status === "Completed").length,
+    upcoming: bookingItems.filter((item) => ["Pending", "AIRecommended", "AwaitingApproval", "Confirmed", "Rescheduled"].includes(item.status) && dateValue(item.bookingDate) >= localToday()).length,
+  };
   const cover = profile?.coverPhotoUrl?.trim();
   const showCover = Boolean(cover && cover !== failedCoverUrl);
   const metrics = [
@@ -50,6 +57,7 @@ export default function StudioDashboardOverview(props) {
   return <>
     <section className="dashboard-welcome"><h2>Welcome back, {profileLoading ? "Studio" : studioName}! <span aria-hidden="true">👋</span></h2><p>Here&apos;s what&apos;s happening with your studio.</p></section>
     <section className="dashboard-metrics" aria-label="Studio statistics">{metrics.map(([icon, tone, label, loading, error, value, detail]) => <Card className="metric-card" key={label}><span className={`metric-icon metric-${tone}`}><StudioIcon name={icon} /></span><div><p>{label}</p><h3><LoadValue loading={loading} error={error}>{value}</LoadValue></h3><small>{error || detail}</small></div></Card>)}</section>
+    <section className="booking-dashboard-panel"><div><p className="studio-kicker">BOOKINGS</p><h3>Booking overview</h3><p>Live booking counts from the booking management API.</p></div><button type="button" className="dashboard-primary-button" onClick={() => go("/studio/bookings")}>Manage bookings</button><div className="booking-dashboard-counts">{[["Pending", bookingCounts.pending], ["Confirmed", bookingCounts.confirmed], ["Upcoming", bookingCounts.upcoming], ["Completed", bookingCounts.completed]].map(([label, value]) => <div key={label}><span>{label}</span><strong><LoadValue loading={bookingsLoading} error={bookingsError}>{value}</LoadValue></strong></div>)}</div>{bookingsError && <p className="booking-dashboard-error">{bookingsError}</p>}</section>
     <section className="dashboard-two-column dashboard-primary-row">
       <Card className="dashboard-panel studio-summary-card"><div className={`studio-summary-cover${showCover ? " has-image" : ""}`}>{showCover && <img src={cover} alt={`${studioName} cover`} onError={() => setFailedCoverUrl(cover)} />}<button className="studio-cover-action" type="button" onClick={() => go("/studio/profile")}><StudioIcon name="portfolio" />{showCover ? "Change Cover Photo" : "Add Cover Photo"}</button></div><div className="studio-summary-content"><ImageAvatar profile={profile} failedLogoUrl={failedLogoUrl} onLogoError={onLogoError} /><button className="dashboard-secondary-button" type="button" onClick={() => go("/studio/profile")}>Edit Profile</button><div className="studio-summary-copy">{profileLoading ? <p>Loading studio profile…</p> : profileError ? <p className="dashboard-error">{profileError}</p> : <><h3>{profile?.studioName?.trim() || "Studio profile not set up"}</h3><p className="studio-summary-location">{profile?.location?.trim() || "Location not provided"}</p>{profile?.description?.trim() && <p className="studio-summary-description">{profile.description.trim()}</p>}<p className="studio-summary-types">{profile?.photographyTypes?.trim() || "Photography types not provided"}</p></>}</div></div></Card>
       <Card className="dashboard-panel"><div className="dashboard-panel-heading"><div><h3>Upcoming Availability</h3><p>Your next schedule entries</p></div><button type="button" onClick={() => go("/studio/availability")}>Manage Availability</button></div>{availabilityLoading ? <p className="dashboard-empty">Loading availability…</p> : availabilityError ? <p className="dashboard-empty dashboard-error">{availabilityError}</p> : upcoming.length ? <div className="upcoming-list">{upcoming.slice(0, 7).map((item, index) => <div key={item.id ?? `${item.date}-${index}`}><span className={`availability-state ${item.isAvailable ? "available" : "unavailable"}`}><StudioIcon name={item.isAvailable ? "check" : "x"} /></span><span><strong>{formatDate(item.date)}</strong><small>{formatTime(item.startTime)} – {formatTime(item.endTime)}</small></span><em className={item.isAvailable ? "available" : "unavailable"}>{item.isAvailable ? "Available" : "Unavailable"}</em></div>)}</div> : <p className="dashboard-empty">No upcoming availability records.</p>}</Card>

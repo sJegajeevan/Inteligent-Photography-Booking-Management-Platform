@@ -64,6 +64,7 @@ using (var scope = app.Services.CreateScope())
         CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_Email"
         ON "Users" ("Email");
 
+        CREATE TABLE IF NOT EXISTS "Studios" ("Id" uuid PRIMARY KEY);
         ALTER TABLE "Studios" ADD COLUMN IF NOT EXISTS "UserId" integer;
         ALTER TABLE "Studios" ADD COLUMN IF NOT EXISTS "StudioName" character varying(120) NOT NULL DEFAULT '';
         ALTER TABLE "Studios" ADD COLUMN IF NOT EXISTS "Description" character varying(1000) NOT NULL DEFAULT '';
