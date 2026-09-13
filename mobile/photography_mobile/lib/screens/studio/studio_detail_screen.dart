@@ -4,6 +4,7 @@ import '../../models/studio.dart';
 import '../../services/studio_service.dart';
 import '../../widgets/studio_card.dart';
 import '../../widgets/studio_error.dart';
+import '../../widgets/studio_packages_section.dart';
 
 class StudioDetailScreen extends StatefulWidget {
   const StudioDetailScreen({super.key, required this.studioId, this.service});
@@ -53,6 +54,10 @@ class _StudioDetailScreenState extends State<StudioDetailScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   StudioCard(studio: snapshot.data!, detail: true),
+                  StudioPackagesSection(
+                    key: ValueKey(widget.studioId),
+                    studioId: snapshot.data!.id,
+                  ),
                   // Future sections can use /{studioId}/portfolio, /services and /availability.
                   // Keep these independent of the overview request when implemented.
                 ],

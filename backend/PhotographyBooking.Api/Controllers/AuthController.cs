@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -95,6 +96,16 @@ public class AuthController : ControllerBase
                 user.Role
             }
         });
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return Unauthorized();
+        var user = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(item => item.Id == userId);
+        if (user is null) return Unauthorized();
+        return Ok(new { user.Id, user.FullName, user.Email, user.Role });
     }
 
     private string GenerateToken(User user)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PhotographyBooking.Api.Data;
 using PhotographyBooking.Api.DTOs.PhotographyPackages;
+using PhotographyBooking.Api.Models;
 
 namespace PhotographyBooking.Api.Services;
 
@@ -12,6 +13,17 @@ public class PackagePriceCalculationService
     public async Task<(PackagePriceCalculationResponseDto? Result, string? Error)> CalculateAsync(int userId, Guid packageId, PackagePriceCalculationRequestDto request)
     {
         var package = await _db.PhotographyPackages.Include(item => item.Addons).SingleOrDefaultAsync(item => item.Id == packageId && item.Studio.UserId == userId);
+        return Calculate(package, request);
+    }
+
+    public async Task<(PackagePriceCalculationResponseDto? Result, string? Error)> CalculatePublicAsync(Guid studioId, Guid packageId, PackagePriceCalculationRequestDto request)
+    {
+        var package = await _db.PhotographyPackages.AsNoTracking().Include(item => item.Addons).SingleOrDefaultAsync(item => item.Id == packageId && item.StudioId == studioId && item.Status == PhotographyPackageStatus.Active);
+        return Calculate(package, request);
+    }
+
+    private static (PackagePriceCalculationResponseDto? Result, string? Error) Calculate(PhotographyPackage? package, PackagePriceCalculationRequestDto request)
+    {
         if (package is null) return (null, "Package was not found.");
         if (request.ExtraHours < 0 || request.AdditionalPhotographers < 0) return (null, "Extra hours and additional photographers cannot be negative.");
         var selectedIds = request.SelectedAddonIds.ToList();

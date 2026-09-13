@@ -36,7 +36,12 @@ builder.Services.AddSwaggerGen();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddCors(options => options.AddPolicy("FlutterDevelopment", policy =>
-        policy.WithOrigins("http://localhost:5174").WithMethods("GET").AllowAnyHeader()));
+        policy.SetIsOriginAllowed(origin =>
+                Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
+                (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || uri.Host == "127.0.0.1"))
+            .AllowAnyMethod()
+            .AllowAnyHeader()));
 }
 
 var app = builder.Build();
@@ -143,6 +148,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {
