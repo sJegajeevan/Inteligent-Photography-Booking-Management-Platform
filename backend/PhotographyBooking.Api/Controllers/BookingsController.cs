@@ -27,7 +27,8 @@ public class BookingsController : ControllerBase
             .ThenByDescending(booking => booking.StartTime)
             .ToListAsync();
 
-        return Ok(bookings.Select(ToResponse));
+        var responses = await Task.WhenAll(bookings.Select(ToResponseAsync));
+        return Ok(responses);
     }
 
     // GET: /api/bookings/5
@@ -43,7 +44,7 @@ public class BookingsController : ControllerBase
             return NotFound(new { message = "Booking not found." });
         }
 
-        return Ok(ToResponse(booking));
+        return Ok(await ToResponseAsync(booking));
     }
 
     // POST: /api/bookings
@@ -85,7 +86,7 @@ public class BookingsController : ControllerBase
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, ToResponse(booking));
+        return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, await ToResponseAsync(booking));
     }
 
     // PATCH: /api/bookings/5/status
@@ -122,7 +123,7 @@ public class BookingsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(ToResponse(booking));
+        return Ok(await ToResponseAsync(booking));
     }
 
     // GET: /api/bookings/5/history
@@ -169,7 +170,7 @@ public class BookingsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(ToResponse(booking));
+        return Ok(await ToResponseAsync(booking));
     }
 
     private static bool IsValidStatusTransition(BookingStatus currentStatus, BookingStatus newStatus)
@@ -230,14 +231,29 @@ public class BookingsController : ControllerBase
         };
     }
 
-    private static BookingResponse ToResponse(Booking booking)
+    private async Task<BookingResponse> ToResponseAsync(Booking booking)
     {
+        var customerName = await _context.Users
+            .AsNoTracking()
+            .Where(user => user.Id == booking.CustomerId)
+            .Select(user => user.FullName)
+            .FirstOrDefaultAsync();
+
+        var studioName = await _context.Studios
+            .AsNoTracking()
+            .Where(studio => studio.UserId == booking.StudioId)
+            .Select(studio => studio.StudioName)
+            .FirstOrDefaultAsync();
+
         return new BookingResponse
         {
             Id = booking.Id,
             CustomerId = booking.CustomerId,
             StudioId = booking.StudioId,
             PackageId = booking.PackageId,
+            CustomerName = string.IsNullOrWhiteSpace(customerName) ? $"Customer #{booking.CustomerId}" : customerName,
+            StudioName = string.IsNullOrWhiteSpace(studioName) ? $"Studio #{booking.StudioId}" : studioName,
+            PackageName = $"Package #{booking.PackageId}",
             BookingDate = booking.BookingDate,
             StartTime = booking.StartTime,
             EndTime = booking.EndTime,

@@ -19,6 +19,11 @@ function readableStatus(status) {
   return status === "AIRecommended" ? "AI Recommended" : status === "AwaitingApproval" ? "Awaiting Approval" : status;
 }
 
+function formatName(value, fallback) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed || fallback;
+}
+
 function actionLabel(action) {
   if (action === "Confirmed") return "Confirm booking";
   if (action === "Completed") return "Mark as completed";
@@ -83,7 +88,7 @@ export default function StudioBookingDetails({ bookingId }) {
   return <>
     <section className="studio-route-heading booking-route-heading"><div><button className="booking-back-link" type="button" onClick={() => window.location.assign("/studio/bookings")}>← All bookings</button><p className="studio-kicker">BOOKING #{booking.id}</p><h1>Booking details</h1><p>Review the complete request and status activity.</p></div><BookingStatusBadge status={booking.status} /></section>
     {feedback && <p className="booking-feedback" role="status">{feedback}</p>}
-    <section className="booking-detail-grid"><article className="booking-detail-card"><h2>Booking details</h2><dl><div><dt>Customer</dt><dd>Customer #{booking.customerId}</dd></div><div><dt>Studio</dt><dd>Studio #{booking.studioId}</dd></div><div><dt>Package</dt><dd>Package #{booking.packageId}</dd></div><div><dt>Shoot date</dt><dd>{formatDate(booking.bookingDate)}</dd></div><div><dt>Time</dt><dd>{formatTime(booking.startTime)} – {formatTime(booking.endTime)}</dd></div><div><dt>Location</dt><dd>{booking.location || "Not provided"}</dd></div><div><dt>Total price</dt><dd>{Number(booking.totalPrice || 0).toLocaleString("en-LK", { style: "currency", currency: "LKR" })}</dd></div><div><dt>Created</dt><dd>{formatDateTime(booking.createdAt)}</dd></div></dl>{booking.notes && <div className="booking-notes"><h3>Notes</h3><p>{booking.notes}</p></div>}</article>
+    <section className="booking-detail-grid"><article className="booking-detail-card"><h2>Booking details</h2><dl><div><dt>Customer</dt><dd>{formatName(booking.customerName, `Customer #${booking.customerId}`)}</dd></div><div><dt>Studio</dt><dd>{formatName(booking.studioName, `Studio #${booking.studioId}`)}</dd></div><div><dt>Package</dt><dd>{formatName(booking.packageName, `Package #${booking.packageId}`)}</dd></div><div><dt>Shoot date</dt><dd>{formatDate(booking.bookingDate)}</dd></div><div><dt>Time</dt><dd>{formatTime(booking.startTime)} – {formatTime(booking.endTime)}</dd></div><div><dt>Location</dt><dd>{booking.location || "Not provided"}</dd></div><div><dt>Total price</dt><dd>{Number(booking.totalPrice || 0).toLocaleString("en-LK", { style: "currency", currency: "LKR" })}</dd></div><div><dt>Created</dt><dd>{formatDateTime(booking.createdAt)}</dd></div></dl>{booking.notes && <div className="booking-notes"><h3>Notes</h3><p>{booking.notes}</p></div>}</article>
       <aside className="booking-actions-card"><h2>Actions</h2><p>Available actions follow the current backend status rules.</p>{availableActions.length ? <div>{availableActions.map((item) => <button key={item} type="button" className={item === "Cancelled" || item === "Rejected" ? "booking-danger-action" : "booking-primary-action"} onClick={() => setAction(item)}>{item === "Confirmed" ? "Confirm booking" : item === "Completed" ? "Mark as completed" : item === "Rejected" ? "Reject booking" : "Cancel booking"}</button>)}</div> : <p className="booking-muted">No further actions are available for this status.</p>}</aside>
     </section>
     <section className="booking-history-card"><div><p className="studio-kicker">STATUS HISTORY</p><h2>Timeline</h2></div>{history.length ? <ol className="booking-timeline">{history.map((item) => <li key={item.id}><span className="booking-timeline-dot" /><div><div><strong>{item.oldStatus ? `${readableStatus(item.oldStatus)} → ` : ""}{readableStatus(item.newStatus)}</strong><time>{formatDateTime(item.createdAt)}</time></div><p>Changed by {item.changedBy}{item.reason ? ` · ${item.reason}` : ""}</p></div></li>)}</ol> : <p className="booking-muted">No status changes have been recorded yet.</p>}</section>
