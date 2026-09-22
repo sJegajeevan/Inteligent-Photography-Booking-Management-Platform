@@ -130,7 +130,7 @@ function StudioDashboard({ page = "dashboard", bookingId }) {
   const profileCompletion = Math.round((completedProfileFields / profileCompletionFields.length) * 100);
   const heading = pageDetails[page];
 
-  return <StudioLayout page={page} profile={profile}>
+  return <StudioLayout page={page} profile={profile} bookings={bookings} bookingsLoading={bookingsLoading}>
       {heading && <section className="studio-route-heading"><p className="studio-kicker">{heading[0]}</p><h1>{heading[1]}</h1><p>{heading[2]}</p></section>}
       {page === "dashboard" && <StudioDashboardOverview profile={profile} profileLoading={isProfileLoading} profileError={profileError} profileCompletion={profileCompletion} portfolio={portfolioItems} portfolioLoading={isPortfolioLoading} portfolioError={portfolioError} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} availability={availability} availabilityLoading={isAvailabilityLoading} availabilityError={availabilityError} bookings={bookings} bookingsLoading={bookingsLoading} bookingsError={bookingsError} failedLogoUrl={failedHeroLogoUrl} onLogoError={setFailedHeroLogoUrl} />}
       {page === "profile" && <section className="studio-layout studio-route-content"><StudioProfile profile={profile} isLoading={isProfileLoading} error={profileError} onSave={saveProfile} onDelete={deleteProfile} onRetry={loadProfile} /></section>}
