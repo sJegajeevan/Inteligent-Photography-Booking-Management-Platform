@@ -5,10 +5,12 @@ import { resolvePortfolioImageUrl } from "../../services/studioPortfolioService"
 
 const dateFormatter = new Intl.DateTimeFormat("en-LK", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 const timeFormatter = new Intl.DateTimeFormat("en-LK", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+const currencyFormatter = new Intl.NumberFormat("en-LK", { style: "currency", currency: "LKR", maximumFractionDigits: 0 });
 const dateValue = (value) => typeof value === "string" ? value.slice(0, 10) : "";
 function localToday() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 const formatDate = (value) => dateFormatter.format(new Date(`${dateValue(value)}T00:00:00Z`));
 function formatTime(value) { if (!/^\d{2}:\d{2}/.test(value || "")) return "Not set"; const [h, m] = value.split(":").map(Number); return timeFormatter.format(new Date(Date.UTC(2000, 0, 1, h, m))); }
+const formatCurrency = (value) => currencyFormatter.format(Number(value || 0));
 const go = (path) => window.location.assign(path);
 
 function ImageAvatar({ profile, failedLogoUrl, onLogoError }) {
@@ -39,6 +41,18 @@ export default function StudioDashboardOverview(props) {
     completed: bookingItems.filter((item) => item.status === "Completed").length,
     upcoming: bookingItems.filter((item) => ["Pending", "AIRecommended", "AwaitingApproval", "Confirmed", "Rescheduled"].includes(item.status) && dateValue(item.bookingDate) >= localToday()).length,
   };
+  const confirmedAndCompleted = bookingItems.filter((item) => ["Confirmed", "Completed"].includes(item.status));
+  const activePipeline = bookingItems.filter((item) => ["Pending", "AIRecommended", "AwaitingApproval", "Rescheduled"].includes(item.status));
+  const totalRevenue = confirmedAndCompleted.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+  const activePipelineValue = activePipeline.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+  const averageValue = bookingItems.length ? totalRevenue / bookingItems.length : 0;
+  const conversionRate = bookingItems.length ? (confirmedAndCompleted.length / bookingItems.length) * 100 : 0;
+  const analyticsCards = [
+    ["revenue", "violet", "Revenue", formatCurrency(totalRevenue), "Confirmed + completed bookings"],
+    ["average", "green", "Avg. booking", formatCurrency(averageValue), "Across all bookings"],
+    ["conversion", "blue", "Conversion", `${Math.round(conversionRate)}%`, "Confirmed + completed rate"],
+    ["pipeline", "amber", "Pipeline", formatCurrency(activePipelineValue), "Pending and active work"],
+  ];
   const cover = profile?.coverPhotoUrl?.trim();
   const showCover = Boolean(cover && cover !== failedCoverUrl);
   const metrics = [
@@ -58,6 +72,10 @@ export default function StudioDashboardOverview(props) {
     <section className="dashboard-welcome"><h2>Welcome back, {profileLoading ? "Studio" : studioName}! <span aria-hidden="true">👋</span></h2><p>Here&apos;s what&apos;s happening with your studio.</p></section>
     <section className="dashboard-metrics" aria-label="Studio statistics">{metrics.map(([icon, tone, label, loading, error, value, detail]) => <Card className="metric-card" key={label}><span className={`metric-icon metric-${tone}`}><StudioIcon name={icon} /></span><div><p>{label}</p><h3><LoadValue loading={loading} error={error}>{value}</LoadValue></h3><small>{error || detail}</small></div></Card>)}</section>
     <section className="booking-dashboard-panel"><div><p className="studio-kicker">BOOKINGS</p><h3>Booking overview</h3><p>Live booking counts from the booking management API.</p></div><button type="button" className="dashboard-primary-button" onClick={() => go("/studio/bookings")}>Manage bookings</button><div className="booking-dashboard-counts">{[["Pending", bookingCounts.pending], ["Confirmed", bookingCounts.confirmed], ["Upcoming", bookingCounts.upcoming], ["Completed", bookingCounts.completed]].map(([label, value]) => <div key={label}><span>{label}</span><strong><LoadValue loading={bookingsLoading} error={bookingsError}>{value}</LoadValue></strong></div>)}</div>{bookingsError && <p className="booking-dashboard-error">{bookingsError}</p>}</section>
+    <section className="booking-reporting-panel" aria-label="Booking analytics and reporting">
+      <div className="booking-reporting-header"><div><p className="studio-kicker">REPORTING</p><h3>Booking analytics</h3></div><button type="button" className="dashboard-secondary-button" onClick={() => go("/studio/bookings")}>View report</button></div>
+      <div className="booking-reporting-grid">{analyticsCards.map(([icon, tone, label, value, detail]) => <article key={label} className="booking-reporting-card"><span className={`metric-icon metric-${tone}`}><StudioIcon name={icon} /></span><div><p>{label}</p><strong><LoadValue loading={bookingsLoading} error={bookingsError}>{value}</LoadValue></strong><small>{detail}</small></div></article>)}</div>
+    </section>
     <section className="dashboard-two-column dashboard-primary-row">
       <Card className="dashboard-panel studio-summary-card"><div className={`studio-summary-cover${showCover ? " has-image" : ""}`}>{showCover && <img src={cover} alt={`${studioName} cover`} onError={() => setFailedCoverUrl(cover)} />}<button className="studio-cover-action" type="button" onClick={() => go("/studio/profile")}><StudioIcon name="portfolio" />{showCover ? "Change Cover Photo" : "Add Cover Photo"}</button></div><div className="studio-summary-content"><ImageAvatar profile={profile} failedLogoUrl={failedLogoUrl} onLogoError={onLogoError} /><button className="dashboard-secondary-button" type="button" onClick={() => go("/studio/profile")}>Edit Profile</button><div className="studio-summary-copy">{profileLoading ? <p>Loading studio profile…</p> : profileError ? <p className="dashboard-error">{profileError}</p> : <><h3>{profile?.studioName?.trim() || "Studio profile not set up"}</h3><p className="studio-summary-location">{profile?.location?.trim() || "Location not provided"}</p>{profile?.description?.trim() && <p className="studio-summary-description">{profile.description.trim()}</p>}<p className="studio-summary-types">{profile?.photographyTypes?.trim() || "Photography types not provided"}</p></>}</div></div></Card>
       <Card className="dashboard-panel"><div className="dashboard-panel-heading"><div><h3>Upcoming Availability</h3><p>Your next schedule entries</p></div><button type="button" onClick={() => go("/studio/availability")}>Manage Availability</button></div>{availabilityLoading ? <p className="dashboard-empty">Loading availability…</p> : availabilityError ? <p className="dashboard-empty dashboard-error">{availabilityError}</p> : upcoming.length ? <div className="upcoming-list">{upcoming.slice(0, 7).map((item, index) => <div key={item.id ?? `${item.date}-${index}`}><span className={`availability-state ${item.isAvailable ? "available" : "unavailable"}`}><StudioIcon name={item.isAvailable ? "check" : "x"} /></span><span><strong>{formatDate(item.date)}</strong><small>{formatTime(item.startTime)} – {formatTime(item.endTime)}</small></span><em className={item.isAvailable ? "available" : "unavailable"}>{item.isAvailable ? "Available" : "Unavailable"}</em></div>)}</div> : <p className="dashboard-empty">No upcoming availability records.</p>}</Card>
