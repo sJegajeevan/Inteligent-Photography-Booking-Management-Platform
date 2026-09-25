@@ -10,7 +10,7 @@ function ProtectedRoute({ children, allowedRoles }) {
     return null;
   }
 
-  const normalizedRole = typeof user?.role === "string" ? user.role.toLowerCase() : "";
+  const normalizedRole = typeof user?.role === "string" ? user.role.trim().toLowerCase() : "";
   const hasAllowedRole = !allowedRoles || allowedRoles.some((role) => role.toLowerCase() === normalizedRole);
   if (!hasAllowedRole) {
     window.location.replace(roleRoutes[normalizedRole] || "/auth");

@@ -2,6 +2,7 @@ namespace PhotographyBooking.Api.DTOs.PublicStudios;
 
 public class PublicStudioSummaryDto
 {
+    public double? DistanceKm { get; set; }
     public Guid Id { get; set; }
     public string StudioName { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;

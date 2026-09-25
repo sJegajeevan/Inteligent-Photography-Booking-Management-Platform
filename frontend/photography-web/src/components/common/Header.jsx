@@ -13,7 +13,7 @@ function Header({ showPublicNavigation = true, studioNavigation = null, studioAc
       <div className={`header-container${studioNavigation ? " studio-header-container" : ""}`}>
         <div className="brand">
           <span className="brand-icon">✦</span>
-          <span className="brand-name">Photography AI</span>
+          <span className="brand-name">SnapSync AI</span>
         </div>
 
         {showPublicNavigation && <nav className="nav">

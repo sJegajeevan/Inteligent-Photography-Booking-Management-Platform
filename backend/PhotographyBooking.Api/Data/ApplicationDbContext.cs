@@ -15,6 +15,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<PackageAddon> PackageAddons { get; set; }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AiWorkflow> AiWorkflows => Set<AiWorkflow>();
+    public DbSet<AiWorkflowEvent> AiWorkflowEvents => Set<AiWorkflowEvent>();
+    public DbSet<AiWorkflowApproval> AiWorkflowApprovals => Set<AiWorkflowApproval>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
@@ -23,18 +27,82 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<Review> Reviews => Set<Review>();
     public DbSet<BookingStatusHistory> BookingStatusHistories => Set<BookingStatusHistory>();
     public DbSet<BookingLocation> BookingLocations => Set<BookingLocation>();
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        AiWorkflowPersistenceGuard.Validate(ChangeTracker);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        AiWorkflowPersistenceGuard.Validate(ChangeTracker);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        AiWorkflowConfiguration.Configure(modelBuilder);
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(n => n.Title).HasMaxLength(160).IsRequired();
+            entity.Property(n => n.Message).HasMaxLength(1000).IsRequired();
+            entity.Property(n => n.Type).HasMaxLength(60).IsRequired();
+            entity.HasIndex(n => new { n.CustomerId, n.CreatedAt });
+            entity.HasIndex(n => new { n.CustomerId, n.IsRead });
+            entity.HasOne(n => n.Customer).WithMany().HasForeignKey(n => n.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(n => n.Booking).WithMany().HasForeignKey(n => n.BookingId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Keep the existing database email uniqueness constraint in the EF model.
+        modelBuilder.Entity<User>().HasIndex(user => user.Email).IsUnique();
+
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.ToTable("Reviews", table => table.HasCheckConstraint(
+                "CK_Reviews_Rating", "\"Rating\" BETWEEN 1 AND 5"));
+            entity.Property(review => review.Comment).HasMaxLength(2000);
+            entity.HasIndex(review => review.BookingId).IsUnique();
+            entity.HasIndex(review => new { review.BookingId, review.CustomerId, review.StudioId }).IsUnique();
+            entity.HasIndex(review => new { review.StudioId, review.CreatedAt });
+            entity.HasOne(review => review.Booking).WithOne()
+                .HasForeignKey<Review>(review => new { review.BookingId, review.CustomerId, review.StudioId })
+                .HasPrincipalKey<Booking>(booking => new { booking.Id, booking.CustomerId, booking.StudioId })
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(review => review.Customer).WithMany()
+                .HasForeignKey(review => review.CustomerId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(review => review.Studio).WithMany()
+                .HasForeignKey(review => review.StudioId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.Property(booking => booking.Location).HasMaxLength(500);
             entity.Property(booking => booking.Notes).HasMaxLength(1_000);
             entity.Property(booking => booking.TotalPrice).HasPrecision(18, 2);
+            entity.Property(booking => booking.PricingSnapshotJson).HasColumnType("jsonb");
+
+            entity.HasOne(booking => booking.Customer)
+                .WithMany()
+                .HasForeignKey(booking => booking.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(booking => booking.Studio)
+                .WithMany()
+                .HasForeignKey(booking => booking.StudioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(booking => booking.Package)
+                .WithMany()
+                .HasForeignKey(booking => booking.PackageId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasMany(booking => booking.StatusHistory)
                 .WithOne(history => history.Booking)
@@ -70,6 +138,12 @@ public class ApplicationDbContext : DbContext
             entity.Property(s => s.Description).HasMaxLength(1000);
             entity.Property(s => s.Location).HasMaxLength(160);
             entity.Property(s => s.Address).HasMaxLength(240);
+            entity.Property(s => s.Latitude).HasPrecision(9, 6);
+            entity.Property(s => s.Longitude).HasPrecision(9, 6);
+            entity.ToTable("Studios", table => table.HasCheckConstraint("CK_Studios_Coordinates",
+                "(\"Latitude\" IS NULL AND \"Longitude\" IS NULL) OR " +
+                "(\"Latitude\" IS NOT NULL AND \"Longitude\" IS NOT NULL AND " +
+                "\"Latitude\" BETWEEN -90 AND 90 AND \"Longitude\" BETWEEN -180 AND 180)"));
             entity.Property(s => s.ContactNumber).HasMaxLength(30);
             entity.Property(s => s.Email).HasMaxLength(254);
             entity.Property(s => s.PhotographyTypes).HasMaxLength(500);

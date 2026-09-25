@@ -10,9 +10,14 @@ const navigation = [
   ["/studio/packages", "Packages", "packages"],
   ["/studio/bookings", "Bookings", "bookings"],
   ["/studio/schedule", "Schedule", "schedule"],
+  ["/studio/customers", "Customers", "customers"],
+  ["/studio/reviews", "Reviews", "reviews"],
+  ["/studio/ai-workflows", "AI Recommendations", "reviews"],
 ];
 
 const titles = {
+  customers: "Customers",
+  customerDetails: "Customer Details",
   dashboard: "Dashboard",
   profile: "Studio Profile",
   availability: "Availability",
@@ -22,10 +27,16 @@ const titles = {
   bookings: "Bookings",
   bookingDetails: "Booking Details",
   schedule: "Schedule",
+  reviews: "Customer Reviews",
+  reviewDetails: "Review Details",
+  aiWorkflows: "AI Recommendations",
+  aiWorkflowDetails: "Review Recommendation",
 };
 
 export function StudioIcon({ name }) {
   const paths = {
+    customers: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2"/></>,
+    reviews: <path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z" />,
     dashboard: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
     profile: <><circle cx="12" cy="8" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></>,
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></>,
@@ -47,28 +58,31 @@ export function StudioIcon({ name }) {
 
 function StudioAvatar({ profile }) {
   const [failed, setFailed] = useState(false);
-  const name = profile?.studioName?.trim() || "Your Studio";
+  const name = profile?.studioName?.trim() || "Studio";
   const image = profile?.logoUrl?.trim();
   return <span className="studio-layout-avatar">{image && !failed ? <img src={image} alt="" onError={() => setFailed(true)} /> : name.charAt(0).toUpperCase()}</span>;
 }
 
-export default function StudioLayout({ page, profile, children }) {
-  const { logout } = useAuth();
+export default function StudioLayout({ page, profile, profileLoading, children }) {
+  const { user, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const currentPath = window.location.pathname.replace(/\/+$/, "");
-  const studioName = profile?.studioName?.trim() || "Your Studio";
+  const isActive = (path) => currentPath === path ||
+    (["/studio/reviews", "/studio/customers", "/studio/ai-workflows"].includes(path) && currentPath.startsWith(`${path}/`));
+  const studioName = profileLoading ? "Loading…" : profile?.studioName?.trim() || "Complete your Studio Profile";
+  const accountRole = user?.role || "Account";
   const go = (path) => { if (path !== currentPath) window.location.assign(path); };
   const signOut = () => { logout(); window.location.replace("/auth"); };
 
   return <div className="studio-app-shell">
     <button className={`studio-drawer-shade${drawerOpen ? " open" : ""}`} type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />
     <aside className={`studio-sidebar${drawerOpen ? " open" : ""}`}>
-      <div className="studio-sidebar-brand"><span className="studio-brand-mark">P</span><div><strong>Photography AI</strong><small>Studio Management</small></div><button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation"><StudioIcon name="close" /></button></div>
-      <nav aria-label="Studio navigation">{navigation.map(([path, label, icon]) => <button key={path} type="button" className={currentPath === path ? "active" : ""} aria-current={currentPath === path ? "page" : undefined} onClick={() => go(path)}><StudioIcon name={icon} /><span>{label}</span></button>)}</nav>
+      <div className="studio-sidebar-brand"><span className="studio-brand-mark">S</span><div><strong>SnapSync AI</strong><small>Studio Management</small></div><button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation"><StudioIcon name="close" /></button></div>
+      <nav aria-label="Studio navigation">{navigation.map(([path, label, icon]) => <button key={path} type="button" className={isActive(path) ? "active" : ""} aria-current={isActive(path) ? "page" : undefined} onClick={() => go(path)}><StudioIcon name={icon} /><span>{label}</span></button>)}</nav>
       <button className="studio-logout" type="button" onClick={signOut}><StudioIcon name="logout" /><span>Logout</span></button>
     </aside>
     <div className="studio-main-shell">
-      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><button className="studio-notification-button" type="button" aria-label="Notifications"><StudioIcon name="bell" /></button><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>Studio Owner</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
+      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><button className="studio-notification-button" type="button" aria-label="Notifications"><StudioIcon name="bell" /></button><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>{accountRole}</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
       <main className={`studio-page studio-route-page studio-${page}-page`}>{children}</main>
     </div>
   </div>;

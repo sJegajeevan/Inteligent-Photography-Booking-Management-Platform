@@ -1,0 +1,35 @@
+.studio-location-picker {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  background: var(--cream);
+  min-width: 0;
+}
+
+.studio-location-picker p {
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.studio-location-toggle {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--primary-dark);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.studio-location-map {
+  width: 100%;
+  height: clamp(240px, 45vh, 360px);
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 10px;
+}

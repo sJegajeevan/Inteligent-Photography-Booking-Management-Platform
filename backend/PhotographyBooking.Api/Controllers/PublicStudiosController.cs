@@ -1,3 +1,4 @@
+using PhotographyBooking.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,53 +12,43 @@ namespace PhotographyBooking.Api.Controllers;
 [AllowAnonymous]
 public class PublicStudiosController : ControllerBase
 {
-    private const int SummaryLength = 180;
     private readonly ApplicationDbContext _dbContext;
 
-    public PublicStudiosController(ApplicationDbContext dbContext) => _dbContext = dbContext;
+    private readonly StudioDiscoveryService _discovery;
+    public PublicStudiosController(ApplicationDbContext dbContext, StudioDiscoveryService discovery)
+    {
+        _dbContext = dbContext;
+        _discovery = discovery;
+    }
+
+    [HttpGet("nearby")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<IReadOnlyList<PublicStudioSummaryDto>>> GetNearby(
+        [FromQuery] double? latitude, [FromQuery] double? longitude,
+        [FromQuery] double? radiusKm, [FromQuery] string? search,
+        [FromQuery] string? location, [FromQuery] string? service)
+    {
+        try
+        {
+            return Ok(WithPublicImages(await _discovery.NearbyAsync(latitude, longitude, radiusKm,
+                search, location, service, HttpContext.RequestAborted)));
+        }
+        catch (ArgumentException error) { return BadRequest(new { message = error.Message }); }
+    }
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<PublicStudioSummaryDto>>> GetAll(
-        [FromQuery] string? search,
-        [FromQuery] string? location,
-        [FromQuery] string? service)
+        [FromQuery] string? search, [FromQuery] string? location, [FromQuery] string? service) =>
+        Ok(WithPublicImages(await _discovery.SearchAsync(search, location, service, HttpContext.RequestAborted)));
+
+    private IReadOnlyList<PublicStudioSummaryDto> WithPublicImages(IReadOnlyList<PublicStudioSummaryDto> studios)
     {
-        var query = _dbContext.Studios.AsNoTracking().AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
+        foreach (var studio in studios)
         {
-            var term = search.Trim().ToLower();
-            query = query.Where(studio =>
-                studio.StudioName.ToLower().Contains(term) ||
-                studio.Description.ToLower().Contains(term) ||
-                studio.PhotographyTypes.ToLower().Contains(term));
+            studio.ProfileImageUrl = ToPublicImageUrl(studio.ProfileImageUrl);
+            studio.CoverImageUrl = ToPublicImageUrl(studio.CoverImageUrl);
         }
-
-        if (!string.IsNullOrWhiteSpace(location))
-        {
-            var term = location.Trim().ToLower();
-            query = query.Where(studio => studio.Location.ToLower().Contains(term));
-        }
-
-        if (!string.IsNullOrWhiteSpace(service))
-        {
-            var term = service.Trim().ToLower();
-            query = query.Where(studio => _dbContext.StudioServices.Any(item =>
-                item.StudioId == studio.Id && item.ServiceName.ToLower().Contains(term)));
-        }
-
-        var studios = await query.OrderBy(studio => studio.StudioName).ToListAsync();
-        return Ok(studios.Select(studio => new PublicStudioSummaryDto
-        {
-            Id = studio.Id,
-            StudioName = studio.StudioName,
-            Location = studio.Location,
-            DescriptionSummary = Summarize(studio.Description),
-            ProfileImageUrl = ToPublicImageUrl(studio.LogoUrl),
-            CoverImageUrl = ToPublicImageUrl(studio.CoverPhotoUrl),
-            PhotographyTypes = SplitPhotographyTypes(studio.PhotographyTypes),
-            StartingPrice = studio.StartingPrice
-        }).ToList());
+        return studios;
     }
 
     [HttpGet("{studioId:guid}")]
@@ -76,7 +67,7 @@ public class PublicStudiosController : ControllerBase
             ContactNumber = studio.ContactNumber,
             Email = studio.Email,
             ExperienceYears = studio.ExperienceYears,
-            PhotographyTypes = SplitPhotographyTypes(studio.PhotographyTypes),
+            PhotographyTypes = StudioDiscoveryService.SplitPhotographyTypes(studio.PhotographyTypes),
             StartingPrice = studio.StartingPrice,
             ProfileImageUrl = ToPublicImageUrl(studio.LogoUrl),
             CoverImageUrl = ToPublicImageUrl(studio.CoverPhotoUrl)
@@ -123,40 +114,15 @@ public class PublicStudiosController : ControllerBase
     [HttpGet("{studioId:guid}/services")]
     public async Task<ActionResult<IReadOnlyList<PublicStudioServiceDto>>> GetServices(Guid studioId)
     {
-        if (!await StudioExists(studioId)) return StudioNotFound();
-
-        var services = await _dbContext.StudioServices.AsNoTracking()
-            .Where(item => item.StudioId == studioId)
-            .OrderBy(item => item.ServiceName)
-            .Select(item => new PublicStudioServiceDto
-            {
-                Id = item.Id,
-                ServiceName = item.ServiceName,
-                Description = item.Description,
-                PackageDetails = item.PackageDetails,
-                StartingPrice = item.StartingPrice
-            })
-            .ToListAsync();
-        return Ok(services);
+        var services = await _discovery.GetServicesAsync(studioId, HttpContext.RequestAborted);
+        return services is null ? StudioNotFound() : Ok(services);
     }
 
     [HttpGet("{studioId:guid}/availability")]
     public async Task<ActionResult<IReadOnlyList<PublicStudioAvailabilityDto>>> GetAvailability(Guid studioId)
     {
-        if (!await StudioExists(studioId)) return StudioNotFound();
-
-        var availability = await _dbContext.StudioAvailabilities.AsNoTracking()
-            .Where(item => item.StudioId == studioId)
-            .OrderBy(item => item.Date)
-            .Select(item => new PublicStudioAvailabilityDto
-            {
-                Date = item.Date,
-                IsAvailable = item.IsAvailable,
-                StartTime = item.StartTime,
-                EndTime = item.EndTime
-            })
-            .ToListAsync();
-        return Ok(availability);
+        var availability = await _discovery.GetAvailabilityAsync(studioId, HttpContext.RequestAborted);
+        return availability is null ? StudioNotFound() : Ok(availability);
     }
 
     private Task<bool> StudioExists(Guid studioId) =>
@@ -167,22 +133,10 @@ public class PublicStudiosController : ControllerBase
 
     private string? ToPublicImageUrl(string? storedValue)
     {
-        if (string.IsNullOrWhiteSpace(storedValue)) return null;
-        var value = storedValue.Trim().Replace('\\', '/');
-
-        if (Uri.TryCreate(value, UriKind.Absolute, out var absoluteUri))
-            return absoluteUri.Scheme is "http" or "https" ? absoluteUri.ToString() : null;
-
-        // Only known web-relative paths are exposed; local drive and arbitrary filesystem paths are rejected.
-        if (!value.StartsWith('/') || value.StartsWith("//") || value.Contains("..")) return null;
+        var value = StudioDiscoveryService.PublicImageReference(storedValue);
+        if (value is null) return null;
+        if (Uri.TryCreate(value, UriKind.Absolute, out var absoluteUri)) return absoluteUri.ToString();
         return $"{Request.Scheme}://{Request.Host}{Request.PathBase}{value}";
     }
 
-    private static IReadOnlyList<string> SplitPhotographyTypes(string value) =>
-        value.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-    private static string Summarize(string value) =>
-        value.Length <= SummaryLength ? value : $"{value[..(SummaryLength - 1)].TrimEnd()}…";
 }

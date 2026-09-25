@@ -1,0 +1,18 @@
+.ai-workflows { color: #eeeaf7; background: #110f1b; padding: 24px; border-radius: 20px; max-width: 1100px; margin: auto; }
+.ai-workflows .studio-route-heading h1 { color: #f4efff; }
+.ai-workflows .studio-route-heading > p:last-child { color: #c4bcd2; }
+.ai-workflow-card { padding: 24px; margin-top: 20px; background: #181522; border: 1px solid #393044; border-radius: 18px; overflow-wrap: anywhere; }
+.ai-workflow-card header, .ai-workflow-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.ai-workflow-card h2 { margin: 0; font-size: 1.25rem; }
+.ai-workflow-card p, .ai-workflow-card dt { color: #c4bcd2; line-height: 1.6; }
+.ai-workflow-status { background: #38264e; padding: 8px 12px; border-radius: 20px; }
+.ai-workflow-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.ai-workflow-facts dd { margin: 5px 0 0; }
+.ai-workflows button, .ai-workflows select, .ai-workflows textarea { font: inherit; color: #f4efff; background: #332341; border: 1px solid #79608f; border-radius: 9px; padding: 10px 15px; }
+.ai-workflows button { cursor: pointer; }
+.ai-workflows button:disabled { opacity: .5; cursor: default; }
+.ai-workflows button:focus-visible, .ai-workflows a:focus-visible, .ai-workflows textarea:focus-visible, .ai-workflows select:focus-visible { outline: 2px solid #bd96ed; outline-offset: 3px; }
+.ai-workflows a { color: #d9b5ff; }
+.ai-workflow-open { display: inline-block; margin: 12px 0 24px; }
+.ai-workflow-actions label { display: block; margin: 20px 0 10px; }
+.ai-workflow-actions textarea { display: block; width: 100%; box-sizing: border-box; min-height: 90px; margin-top: 8px; resize: vertical; }

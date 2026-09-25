@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/auth_user.dart';
 import 'auth_service.dart';
@@ -25,6 +26,30 @@ class AuthSession extends ChangeNotifier {
   Future<void> logout() async {
     await _service.logout();
     user = null;
+    notifyListeners();
+  }
+
+  Future<void> refreshProfile() async {
+    final current = user;
+    final updated = await _service.getProfile();
+    if (user != current || current == null) return;
+    user = updated;
+    notifyListeners();
+  }
+
+  Future<void> updateProfile({required String fullName, required String email, String? phoneNumber}) async {
+    final current = user;
+    final updated = await _service.updateProfile(fullName: fullName, email: email, phoneNumber: phoneNumber);
+    if (user != current || current == null) return;
+    user = updated;
+    notifyListeners();
+  }
+
+  Future<void> uploadProfilePhoto(XFile file) async {
+    final current = user;
+    final updated = await _service.uploadProfilePhoto(file);
+    if (user != current || current == null) return;
+    user = updated;
     notifyListeners();
   }
 

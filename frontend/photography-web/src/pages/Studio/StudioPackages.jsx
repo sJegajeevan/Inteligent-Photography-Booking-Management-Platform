@@ -12,7 +12,7 @@ function Modal({ title, children, className = "" }) {
   return createPortal(<div className="studio-modal-backdrop"><div className={`studio-modal ${className}`} role="dialog" aria-modal="true" aria-labelledby="package-modal-title"><div className="studio-modal-heading"><h3 id="package-modal-title">{title}</h3></div>{children}</div></div>, document.body);
 }
 function Facts({ item }) {
-  return <dl className="package-facts"><div><dt>Duration</dt><dd>{item.durationHours} hours</dd></div><div><dt>Photographers</dt><dd>{item.numberOfPhotographers}</dd></div><div><dt>Edited photos</dt><dd>{item.editedPhotoCount}</dd></div><div><dt>Album</dt><dd>{item.albumIncluded ? "Yes" : "No"}</dd></div><div><dt>Video</dt><dd>{item.videoIncluded ? "Yes" : "No"}</dd></div></dl>;
+  return <dl className="package-facts"><div><span className="package-fact-icon" aria-hidden="true">◷</span><dt>Duration</dt><dd>{item.durationHours} hours</dd></div><div><span className="package-fact-icon" aria-hidden="true">♙</span><dt>Photographers</dt><dd>{item.numberOfPhotographers}</dd></div><div><span className="package-fact-icon" aria-hidden="true">▧</span><dt>Edited photos</dt><dd>{item.editedPhotoCount}</dd></div><div><span className="package-fact-icon" aria-hidden="true">▤</span><dt>Album</dt><dd>{item.albumIncluded ? "Yes" : "No"}</dd></div><div><span className="package-fact-icon" aria-hidden="true">▣</span><dt>Video</dt><dd>{item.videoIncluded ? "Yes" : "No"}</dd></div></dl>;
 }
 function IncludedServices({ services = [], compact = false }) {
   if (!services.length) return <p className="package-no-services">No services included.</p>;

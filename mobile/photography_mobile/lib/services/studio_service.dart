@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/studio.dart';
+import '../models/studio_availability.dart';
+import '../models/studio_portfolio.dart';
+import '../models/studio_service_item.dart';
 import 'api_config.dart';
 
 class StudioApiException implements Exception {
@@ -18,11 +21,11 @@ class StudioService {
   final http.Client _client;
   void close() => _client.close();
 
-  Future<dynamic> _get(String path) async {
+  Future<dynamic> _get(String path, {Map<String, String>? query}) async {
     try {
       final response = await _client
           .get(
-            ApiConfig.endpoint(path),
+            ApiConfig.endpoint(path).replace(queryParameters: query),
             headers: {'Accept': 'application/json'},
           )
           .timeout(const Duration(seconds: 20));
@@ -82,6 +85,84 @@ class StudioService {
     return json.map(_parse).toList();
   }
 
+  Future<List<Studio>> getNearbyStudios({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 50,
+  }) async {
+    final json = await _get(
+      'api/public/studios/nearby',
+      query: {
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+        'radiusKm': radiusKm.toString(),
+      },
+    );
+    if (json is! List) {
+      throw const StudioApiException(
+        'The studio server returned an invalid studio list.',
+      );
+    }
+    return json.map(_parse).toList();
+  }
+
   Future<Studio> getStudio(String id) async =>
       _parse(await _get('api/public/studios/${Uri.encodeComponent(id)}'));
+
+  Future<List<StudioAvailability>> getAvailability(String studioId) async {
+    final json = await _get(
+      'api/public/studios/${Uri.encodeComponent(studioId)}/availability',
+    );
+    try {
+      if (json is! List) throw const FormatException();
+      return json.map((item) {
+        if (item is! Map<String, dynamic>) throw const FormatException();
+        return StudioAvailability.fromJson(item);
+      }).toList();
+    } on FormatException {
+      throw const StudioApiException(
+        'The studio server returned invalid availability data.',
+      );
+    }
+  }
+
+  Future<List<StudioServiceItem>> getServices(String studioId) async {
+    final json = await _get(
+      'api/public/studios/${Uri.encodeComponent(studioId)}/services',
+    );
+    try {
+      if (json is! List) throw const FormatException();
+      return json.map((item) {
+        if (item is! Map<String, dynamic>) throw const FormatException();
+        return StudioServiceItem.fromJson(item);
+      }).toList();
+    } on FormatException {
+      throw const StudioApiException(
+        'The studio server returned invalid services data.',
+      );
+    }
+  }
+
+  StudioPortfolioAlbum _parseAlbum(dynamic json) {
+    try {
+      if (json is! Map<String, dynamic>) throw const FormatException();
+      return StudioPortfolioAlbum.fromJson(json);
+    } on FormatException {
+      throw const StudioApiException(
+        'The studio server returned invalid portfolio data.',
+      );
+    }
+  }
+
+  Future<List<StudioPortfolioAlbum>> getPortfolio(String studioId) async {
+    final json = await _get(
+      'api/public/studios/${Uri.encodeComponent(studioId)}/portfolio',
+    );
+    if (json is! List) {
+      throw const StudioApiException(
+        'The studio server returned an invalid portfolio list.',
+      );
+    }
+    return json.map(_parseAlbum).toList();
+  }
 }

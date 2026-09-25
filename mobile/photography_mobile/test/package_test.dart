@@ -324,16 +324,18 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final pending = Completer<http.Response>();
+      final updated = Completer<http.Response>();
       var postCount = 0;
-      final service = PackageService(
-        client: MockClient((request) async {
+      final client = MockClient((request) async {
           if (request.method == 'POST') {
             postCount++;
+            if (postCount <= 2) return ok(summaryJson());
             expect(jsonDecode(request.body), {
               'selectedAddonIds': [addonId],
-              'extraHours': 1,
+              'extraHours': postCount == 3 ? 1 : 2,
               'additionalPhotographers': 0,
             });
+            if (postCount > 3) return updated.future;
             return pending.future;
           }
           return ok(
@@ -341,9 +343,10 @@ void main() {
                 ? [packageJson()]
                 : packageJson(),
           );
-        }),
-      );
+        });
+      final service = PackageService(client: client);
       addTearDown(service.close);
+      await http.runWithClient(() async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light,
@@ -358,15 +361,21 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('View Details'));
-      await tester.tap(find.text('View Details'));
+      await tester.ensureVisible(find.text('View Package'));
+      await tester.tap(find.text('View Package'));
       await tester.pumpAndSettle();
       expect(find.byType(PackageDetailScreen), findsOneWidget);
       Future<void> reveal(Finder finder) async {
         await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
-        await tester.pumpAndSettle();
+        await tester.pump();
       }
 
+      await tester.scrollUntilVisible(
+        find.text('Customize Package'), 250,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Customize Package'));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byType(CheckboxListTile),
         250,
@@ -394,13 +403,10 @@ void main() {
       await tester.tap(find.byTooltip('Increase Extra Hours'));
       await tester.pump();
       await tester.scrollUntilVisible(
-        find.text('Calculate Price'),
+        find.widgetWithText(FilledButton, 'Calculating…'),
         200,
         scrollable: find.byType(Scrollable).last,
       );
-      await reveal(find.text('Calculate Price'));
-      await tester.tap(find.text('Calculate Price'));
-      await tester.pump();
       expect(
         tester
             .widget<FilledButton>(
@@ -409,7 +415,7 @@ void main() {
             .onPressed,
         isNull,
       );
-      expect(postCount, 1);
+      expect(postCount, 3);
       pending.complete(ok(summaryJson()));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
@@ -428,7 +434,11 @@ void main() {
       await tester.tap(find.byTooltip('Increase Extra Hours'));
       await tester.pump();
       expect(find.text('Price Summary'), findsNothing);
+      updated.complete(ok(summaryJson()));
+      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      }, () => client);
     },
   );
 }

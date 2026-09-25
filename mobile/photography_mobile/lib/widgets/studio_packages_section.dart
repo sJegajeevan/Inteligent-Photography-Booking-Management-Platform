@@ -10,9 +10,11 @@ class StudioPackagesSection extends StatefulWidget {
   const StudioPackagesSection({
     super.key,
     required this.studioId,
+    this.studioName,
     this.service,
   });
   final String studioId;
+  final String? studioName;
   final PackageService? service;
   @override
   State<StudioPackagesSection> createState() => _StudioPackagesSectionState();
@@ -95,9 +97,10 @@ class _StudioPackagesSectionState extends State<StudioPackagesSection> {
                     onView: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => PackageDetailScreen(
+                          studioName: widget.studioName,
                           studioId: widget.studioId,
                           packageId: package.id,
-                          service: _service,
+                          allowCustomization: false,
                         ),
                       ),
                     ),

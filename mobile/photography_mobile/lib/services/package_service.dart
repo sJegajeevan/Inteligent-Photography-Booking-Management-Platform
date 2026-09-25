@@ -148,10 +148,13 @@ class PackageService {
       value,
     ) {
       final summary = PackagePriceSummary.fromJson(_object(value));
+      final returnedAddonIds = summary.selectedAddons.map((addon) => addon.id).toSet();
       if (summary.packageId != package.id ||
-          summary.selectedAddons.any(
-            (a) => !customization.selectedAddonIds.contains(a.id),
-          )) {
+          summary.extraHours != customization.extraHours ||
+          summary.additionalPhotographers != customization.additionalPhotographers ||
+          returnedAddonIds.length != summary.selectedAddons.length ||
+          returnedAddonIds.length != customization.selectedAddonIds.length ||
+          !returnedAddonIds.containsAll(customization.selectedAddonIds)) {
         throw const FormatException('Wrong price summary');
       }
       return summary;

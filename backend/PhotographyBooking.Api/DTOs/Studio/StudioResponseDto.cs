@@ -2,6 +2,8 @@ namespace PhotographyBooking.Api.DTOs.Studio;
 
 public class StudioResponseDto
 {
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
     public Guid Id { get; set; }
     public string StudioName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/photography_package.dart';
+import 'studio_image.dart';
 
 class PackageCard extends StatelessWidget {
   const PackageCard({
@@ -27,6 +28,21 @@ class PackageCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (package.coverImageUrl.trim().isNotEmpty) ...[
+              Semantics(
+                label: '${package.name} package cover',
+                child: ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: StudioImage(url: package.coverImageUrl),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Text(
               package.name.isEmpty ? 'Photography package' : package.name,
               style: theme.textTheme.titleLarge,
@@ -41,7 +57,7 @@ class PackageCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              formatLkr(package.basePrice),
+              'Base price: ${formatLkr(package.basePrice)}',
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.bold,
@@ -52,8 +68,8 @@ class PackageCard extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: [
-                Text('$duration hours'),
-                Text('${package.numberOfPhotographers} photographers'),
+                Text('Duration: $duration ${hours == 1 ? 'hour' : 'hours'}'),
+                Text('Photographers: ${package.numberOfPhotographers}'),
                 Text('${package.editedPhotoCount} edited photos'),
                 Text('Album included: ${package.albumIncluded ? 'Yes' : 'No'}'),
                 Text('Video included: ${package.videoIncluded ? 'Yes' : 'No'}'),
@@ -79,7 +95,7 @@ class PackageCard extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: onView,
                   icon: const Icon(Icons.arrow_forward),
-                  label: const Text('View Details'),
+                  label: const Text('View Package'),
                 ),
               ),
           ],

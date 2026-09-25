@@ -7,6 +7,11 @@ import StudioPackages from "./StudioPackages";
 import StudioBookings from "./StudioBookings";
 import StudioBookingDetails from "./StudioBookingDetails";
 import StudioSchedule from "./StudioSchedule";
+import StudioReviews from "./StudioReviews";
+import StudioAiWorkflows from "./StudioAiWorkflows";
+import StudioReviewDetails from "./StudioReviewDetails";
+import StudioCustomers from "./StudioCustomers";
+import StudioCustomerDetails from "./StudioCustomerDetails";
 import StudioDashboardOverview from "./StudioDashboardOverview";
 import StudioLayout from "./StudioLayout";
 import { useAuth } from "../../context/useAuth";
@@ -35,7 +40,7 @@ function hasProfileValue(profile, field) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function StudioDashboard({ page = "dashboard", bookingId }) {
+function StudioDashboard({ page = "dashboard", bookingId, customerId, reviewId, workflowId }) {
   const { token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [failedHeroLogoUrl, setFailedHeroLogoUrl] = useState("");
@@ -130,7 +135,12 @@ function StudioDashboard({ page = "dashboard", bookingId }) {
   const profileCompletion = Math.round((completedProfileFields / profileCompletionFields.length) * 100);
   const heading = pageDetails[page];
 
-  return <StudioLayout page={page} profile={profile}>
+  return <StudioLayout page={page} profile={profile} profileLoading={isProfileLoading}>
+      {(page === "aiWorkflows" || page === "aiWorkflowDetails") && <StudioAiWorkflows key={`${token}-${workflowId || "queue"}`} workflowId={workflowId} studioName={profile?.studioName} />}
+      {page === "customers" && <StudioCustomers key={token} />}
+      {page === "customerDetails" && <StudioCustomerDetails key={`${token}-${customerId}`} customerId={customerId} />}
+      {page === "reviews" && <StudioReviews key={token} />}
+      {page === "reviewDetails" && <StudioReviewDetails key={`${token}-${reviewId}`} reviewId={reviewId} />}
       {heading && <section className="studio-route-heading"><p className="studio-kicker">{heading[0]}</p><h1>{heading[1]}</h1><p>{heading[2]}</p></section>}
       {page === "dashboard" && <StudioDashboardOverview profile={profile} profileLoading={isProfileLoading} profileError={profileError} profileCompletion={profileCompletion} portfolio={portfolioItems} portfolioLoading={isPortfolioLoading} portfolioError={portfolioError} services={services} servicesLoading={areServicesLoading} servicesError={servicesError} availability={availability} availabilityLoading={isAvailabilityLoading} availabilityError={availabilityError} bookings={bookings} bookingsLoading={bookingsLoading} bookingsError={bookingsError} failedLogoUrl={failedHeroLogoUrl} onLogoError={setFailedHeroLogoUrl} />}
       {page === "profile" && <section className="studio-layout studio-route-content"><StudioProfile profile={profile} isLoading={isProfileLoading} error={profileError} onSave={saveProfile} onDelete={deleteProfile} onRetry={loadProfile} /></section>}

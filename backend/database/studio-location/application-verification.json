@@ -1,0 +1,8 @@
+﻿{
+    "database":  "photography_booking_db",
+    "sqlFile":  "20260921000100_add_studio_coordinates.sql",
+    "sha256":  "DCD5E2DCDC91EBCE997CA69E5EEC3035DE86D133E0D179A12CDC17AF3255D95E",
+    "exitCode":  0,
+    "appliedUtc":  "2026-09-21T08:10:53.1980326Z",
+    "method":  "Reviewed transactional SQL via psql; no EF migration execution"
+}

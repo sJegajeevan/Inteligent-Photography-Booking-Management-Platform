@@ -17,6 +17,9 @@ obj/
 .env.*
 !.env.example
 
+# Private ASP.NET Core development configuration
+appsettings.*.local.json
+
 # Flutter
 .dart_tool/
 .flutter-plugins
@@ -469,3 +472,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Runtime uploaded media
+backend/PhotographyBooking.Api/wwwroot/uploads/
+
+# Local PostgreSQL database backups
+*.backup

@@ -1,0 +1,1940 @@
+{
+  "schema": "public",
+  "preservedHistory": "202609020001_AddPortfolioImages",
+  "tables": [
+    {
+      "name": "BookingLocations",
+      "create": true,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "integer",
+          "nullable": false,
+          "identity": "d",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BookingId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Address",
+          "type": "character varying(500)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "City",
+          "type": "character varying(100)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Latitude",
+          "type": "numeric(9,6)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Longitude",
+          "type": "numeric(9,6)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Notes",
+          "type": "character varying(1000)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_BookingLocations",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_BookingLocations_Bookings_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "principalTable": "Bookings",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_BookingLocations_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "BookingStatusHistories",
+      "create": true,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "integer",
+          "nullable": false,
+          "identity": "d",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BookingId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "OldStatus",
+          "type": "integer",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "NewStatus",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ChangedBy",
+          "type": "character varying(200)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Reason",
+          "type": "character varying(1000)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_BookingStatusHistories",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_BookingStatusHistories_Bookings_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "principalTable": "Bookings",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_BookingStatusHistories_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "Bookings",
+      "create": true,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "integer",
+          "nullable": false,
+          "identity": "d",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CustomerId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PackageId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BookingDate",
+          "type": "date",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StartTime",
+          "type": "time without time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "EndTime",
+          "type": "time without time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Location",
+          "type": "character varying(500)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Notes",
+          "type": "character varying(1000)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Status",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "TotalPrice",
+          "type": "numeric(18,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PricingSnapshotJson",
+          "type": "jsonb",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_Bookings",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        },
+        {
+          "name": "AK_Bookings_Id_CustomerId_StudioId",
+          "columns": [
+            "Id",
+            "CustomerId",
+            "StudioId"
+          ],
+          "primary": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_Bookings_PhotographyPackages_PackageId",
+          "columns": [
+            "PackageId"
+          ],
+          "principalTable": "PhotographyPackages",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        },
+        {
+          "name": "FK_Bookings_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        },
+        {
+          "name": "FK_Bookings_Users_CustomerId",
+          "columns": [
+            "CustomerId"
+          ],
+          "principalTable": "Users",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Bookings_CustomerId",
+          "columns": [
+            "CustomerId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Bookings_PackageId",
+          "columns": [
+            "PackageId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Bookings_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "Notifications",
+      "create": true,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CustomerId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Title",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Message",
+          "type": "character varying(1000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Type",
+          "type": "character varying(60)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BookingId",
+          "type": "integer",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "IsRead",
+          "type": "boolean",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_Notifications",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_Notifications_Bookings_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "principalTable": "Bookings",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "n"
+        },
+        {
+          "name": "FK_Notifications_Users_CustomerId",
+          "columns": [
+            "CustomerId"
+          ],
+          "principalTable": "Users",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Notifications_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Notifications_CustomerId_CreatedAt",
+          "columns": [
+            "CustomerId",
+            "CreatedAt"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Notifications_CustomerId_IsRead",
+          "columns": [
+            "CustomerId",
+            "IsRead"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "PackageAddons",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PackageId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Name",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Description",
+          "type": "character varying(1000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Price",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_PackageAddons",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_PackageAddons_PhotographyPackages_PackageId",
+          "columns": [
+            "PackageId"
+          ],
+          "principalTable": "PhotographyPackages",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_PackageAddons_PackageId",
+          "columns": [
+            "PackageId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "PhotographyPackageServices",
+      "create": false,
+      "columns": [
+        {
+          "name": "PhotographyPackageId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioServiceId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_PhotographyPackageServices",
+          "columns": [
+            "PhotographyPackageId",
+            "StudioServiceId"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_PhotographyPackageServices_PhotographyPackages_PhotographyP~",
+          "columns": [
+            "PhotographyPackageId"
+          ],
+          "principalTable": "PhotographyPackages",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        },
+        {
+          "name": "FK_PhotographyPackageServices_StudioServices_StudioServiceId",
+          "columns": [
+            "StudioServiceId"
+          ],
+          "principalTable": "StudioServices",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_PhotographyPackageServices_StudioServiceId",
+          "columns": [
+            "StudioServiceId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": true
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "PhotographyPackages",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Name",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BasePrice",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ExtraHourRate",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "AdditionalPhotographerRate",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "DurationHours",
+          "type": "numeric(5,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "EditedPhotoCount",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "AlbumIncluded",
+          "type": "boolean",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "VideoIncluded",
+          "type": "boolean",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PackageName",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Category",
+          "type": "character varying(100)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Description",
+          "type": "character varying(2000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Price",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Duration",
+          "type": "character varying(100)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "NumberOfPhotographers",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CoverImageUrl",
+          "type": "character varying(2048)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Status",
+          "type": "character varying(20)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_PhotographyPackages",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_PhotographyPackages_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_PhotographyPackages_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "Reviews",
+      "create": true,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "BookingId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CustomerId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Rating",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Comment",
+          "type": "character varying(2000)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_Reviews",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_Reviews_Bookings_BookingId_CustomerId_StudioId",
+          "columns": [
+            "BookingId",
+            "CustomerId",
+            "StudioId"
+          ],
+          "principalTable": "Bookings",
+          "principalColumns": [
+            "Id",
+            "CustomerId",
+            "StudioId"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        },
+        {
+          "name": "FK_Reviews_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        },
+        {
+          "name": "FK_Reviews_Users_CustomerId",
+          "columns": [
+            "CustomerId"
+          ],
+          "principalTable": "Users",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "r"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Reviews_BookingId",
+          "columns": [
+            "BookingId"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Reviews_BookingId_CustomerId_StudioId",
+          "columns": [
+            "BookingId",
+            "CustomerId",
+            "StudioId"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Reviews_CustomerId",
+          "columns": [
+            "CustomerId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        },
+        {
+          "name": "IX_Reviews_StudioId_CreatedAt",
+          "columns": [
+            "StudioId",
+            "CreatedAt"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": [
+        {
+          "name": "CK_Reviews_Rating",
+          "sql": "\u0022Rating\u0022 BETWEEN 1 AND 5",
+          "catalogSql": "((\u0022Rating\u0022 \u003E= 1) AND (\u0022Rating\u0022 \u003C= 5))"
+        }
+      ]
+    },
+    {
+      "name": "StudioAvailabilities",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": true
+        },
+        {
+          "name": "Date",
+          "type": "date",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "IsAvailable",
+          "type": "boolean",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StartTime",
+          "type": "time without time zone",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "EndTime",
+          "type": "time without time zone",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Notes",
+          "type": "character varying(1000)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_StudioAvailabilities",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_StudioAvailabilities_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_StudioAvailabilities_StudioId_Date",
+          "columns": [
+            "StudioId",
+            "Date"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "StudioPortfolioImages",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioPortfolioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ImageUrl",
+          "type": "character varying(2048)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "DisplayOrder",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_StudioPortfolioImages",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_StudioPortfolioImages_StudioPortfolios_StudioPortfolioId",
+          "columns": [
+            "StudioPortfolioId"
+          ],
+          "principalTable": "StudioPortfolios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": false,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_StudioPortfolioImages_StudioPortfolioId_DisplayOrder",
+          "columns": [
+            "StudioPortfolioId",
+            "DisplayOrder"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "StudioPortfolios",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": true
+        },
+        {
+          "name": "Title",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Description",
+          "type": "character varying(1000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ImageUrl",
+          "type": "character varying(2048)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Category",
+          "type": "character varying(60)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "UpdatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_StudioPortfolios",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_StudioPortfolios_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_StudioPortfolios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "StudioServices",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StudioId",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": true
+        },
+        {
+          "name": "ServiceName",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Description",
+          "type": "character varying(1000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PackageDetails",
+          "type": "text[]",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StartingPrice",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_StudioServices",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_StudioServices_Studios_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "principalTable": "Studios",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_StudioServices_StudioId",
+          "columns": [
+            "StudioId"
+          ],
+          "unique": false,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "Studios",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "uuid",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "UserId",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": true
+        },
+        {
+          "name": "StudioName",
+          "type": "character varying(120)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Description",
+          "type": "character varying(1000)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Location",
+          "type": "character varying(160)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Address",
+          "type": "character varying(240)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ContactNumber",
+          "type": "character varying(30)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Email",
+          "type": "character varying(254)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ExperienceYears",
+          "type": "integer",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PhotographyTypes",
+          "type": "character varying(500)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "StartingPrice",
+          "type": "numeric(12,2)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "LogoUrl",
+          "type": "character varying(2048)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CoverPhotoUrl",
+          "type": "character varying(2048)",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_Studios",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_Studios_Users_UserId",
+          "columns": [
+            "UserId"
+          ],
+          "principalTable": "Users",
+          "principalColumns": [
+            "Id"
+          ],
+          "reconcileWhenMissing": true,
+          "deleteAction": "c"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Studios_UserId",
+          "columns": [
+            "UserId"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": true,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    },
+    {
+      "name": "Users",
+      "create": false,
+      "columns": [
+        {
+          "name": "Id",
+          "type": "integer",
+          "nullable": false,
+          "identity": "d",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "FullName",
+          "type": "text",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Email",
+          "type": "text",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PhoneNumber",
+          "type": "character varying(30)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": true,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "ProfilePhotoUrl",
+          "type": "character varying(2048)",
+          "nullable": true,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": true,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "PasswordHash",
+          "type": "text",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "Role",
+          "type": "text",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        },
+        {
+          "name": "CreatedAt",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "identity": "",
+          "generated": "",
+          "defaultSql": null,
+          "add": false,
+          "reconcileNotNull": false
+        }
+      ],
+      "keys": [
+        {
+          "name": "PK_Users",
+          "columns": [
+            "Id"
+          ],
+          "primary": true
+        }
+      ],
+      "foreignKeys": [],
+      "indexes": [
+        {
+          "name": "IX_Users_Email",
+          "columns": [
+            "Email"
+          ],
+          "unique": true,
+          "filter": null,
+          "reconcileKnownPartial": false,
+          "reconcileWhenMissing": false
+        }
+      ],
+      "checks": []
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "requirements": {
+    "schemaVersion": 1,
+    "photographyType": "Wedding",
+    "location": "Jaffna",
+    "minimumBudget": null,
+    "maximumBudget": 100000,
+    "currency": "LKR",
+    "timeZoneId": "Asia/Colombo",
+    "earliestDate": "2026-12-01",
+    "latestDate": "2026-12-02",
+    "preferredStartTime": null,
+    "preferredEndTime": null,
+    "coverageHours": 4,
+    "requestedServices": ["Photography"],
+    "notes": null
+  },
+  "nearby": null
+}

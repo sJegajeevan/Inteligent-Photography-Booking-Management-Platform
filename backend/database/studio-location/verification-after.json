@@ -1,0 +1,2604 @@
+﻿{
+    "capturedUtc":  "2026-09-21T08:12:31.9940154Z",
+    "phase":  "After",
+    "metadata":  {
+                     "database":  "photography_booking_db",
+                     "tables":  [
+                                    "BookingLocations",
+                                    "BookingStatusHistories",
+                                    "Bookings",
+                                    "Notifications",
+                                    "PackageAddons",
+                                    "PhotographyPackageServices",
+                                    "PhotographyPackages",
+                                    "Reviews",
+                                    "StudioAvailabilities",
+                                    "StudioPortfolioImages",
+                                    "StudioPortfolios",
+                                    "StudioServices",
+                                    "Studios",
+                                    "Users",
+                                    "__EFMigrationsHistory"
+                                ],
+                     "studioKind":  "r",
+                     "columns":  [
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "Id",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "BookingId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "Address",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  500,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "City",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  100,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "Latitude",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  9,
+                                         "numeric_scale":  6,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "Longitude",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  9,
+                                         "numeric_scale":  6,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "BookingLocations",
+                                         "column_name":  "Notes",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "Id",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "BookingId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "OldStatus",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "NewStatus",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "ChangedBy",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  200,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "Reason",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "BookingStatusHistories",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "Id",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "CustomerId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "PackageId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "BookingDate",
+                                         "data_type":  "date",
+                                         "udt_name":  "date",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "StartTime",
+                                         "data_type":  "time without time zone",
+                                         "udt_name":  "time",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "EndTime",
+                                         "data_type":  "time without time zone",
+                                         "udt_name":  "time",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "Location",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  500,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "Notes",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  9
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "Status",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  10
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "TotalPrice",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  18,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  11
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "PricingSnapshotJson",
+                                         "data_type":  "jsonb",
+                                         "udt_name":  "jsonb",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  12
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  13
+                                     },
+                                     {
+                                         "table_name":  "Bookings",
+                                         "column_name":  "UpdatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  14
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "CustomerId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "Title",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "Message",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "Type",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  60,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "BookingId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "IsRead",
+                                         "data_type":  "boolean",
+                                         "udt_name":  "bool",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "Notifications",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "PackageId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "Name",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "Description",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "Price",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "PackageAddons",
+                                         "column_name":  "UpdatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackageServices",
+                                         "column_name":  "PhotographyPackageId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackageServices",
+                                         "column_name":  "StudioServiceId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "PackageName",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Category",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  100,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Description",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Price",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Duration",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  100,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "NumberOfPhotographers",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "CoverImageUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  9
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Status",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  20,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  10
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  11
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "UpdatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  12
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "Name",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  13
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "BasePrice",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  14
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "DurationHours",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  5,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  15
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "EditedPhotoCount",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  16
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "AlbumIncluded",
+                                         "data_type":  "boolean",
+                                         "udt_name":  "bool",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "false",
+                                         "ordinal_position":  17
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "VideoIncluded",
+                                         "data_type":  "boolean",
+                                         "udt_name":  "bool",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "false",
+                                         "ordinal_position":  18
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "ExtraHourRate",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  19
+                                     },
+                                     {
+                                         "table_name":  "PhotographyPackages",
+                                         "column_name":  "AdditionalPhotographerRate",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  20
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "BookingId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "CustomerId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "Rating",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "Comment",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Reviews",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "Date",
+                                         "data_type":  "date",
+                                         "udt_name":  "date",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "CURRENT_DATE",
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "IsAvailable",
+                                         "data_type":  "boolean",
+                                         "udt_name":  "bool",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "false",
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "StartTime",
+                                         "data_type":  "time without time zone",
+                                         "udt_name":  "time",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "EndTime",
+                                         "data_type":  "time without time zone",
+                                         "udt_name":  "time",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "StudioAvailabilities",
+                                         "column_name":  "Notes",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolioImages",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolioImages",
+                                         "column_name":  "StudioPortfolioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolioImages",
+                                         "column_name":  "ImageUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolioImages",
+                                         "column_name":  "DisplayOrder",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolioImages",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "Title",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "Description",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "ImageUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "Category",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  60,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "CURRENT_TIMESTAMP",
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "StudioPortfolios",
+                                         "column_name":  "UpdatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "CURRENT_TIMESTAMP",
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "StudioId",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "ServiceName",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "Description",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "StartingPrice",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "StudioServices",
+                                         "column_name":  "PackageDetails",
+                                         "data_type":  "ARRAY",
+                                         "udt_name":  "_text",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "ARRAY[]::text[]",
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Id",
+                                         "data_type":  "uuid",
+                                         "udt_name":  "uuid",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "UserId",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "StudioName",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  120,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Description",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  1000,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Location",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  160,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "ContactNumber",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  30,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Email",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  254,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "ProfileImage",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Address",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  240,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  9
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "ExperienceYears",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  10
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "PhotographyTypes",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  500,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  11
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "StartingPrice",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  12,
+                                         "numeric_scale":  2,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "0",
+                                         "ordinal_position":  12
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "LogoUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  13
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "CoverPhotoUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  "\u0027\u0027::character varying",
+                                         "ordinal_position":  14
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Latitude",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  9,
+                                         "numeric_scale":  6,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  15
+                                     },
+                                     {
+                                         "table_name":  "Studios",
+                                         "column_name":  "Longitude",
+                                         "data_type":  "numeric",
+                                         "udt_name":  "numeric",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  9,
+                                         "numeric_scale":  6,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  16
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "Id",
+                                         "data_type":  "integer",
+                                         "udt_name":  "int4",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  32,
+                                         "numeric_scale":  0,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "FullName",
+                                         "data_type":  "text",
+                                         "udt_name":  "text",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "Email",
+                                         "data_type":  "text",
+                                         "udt_name":  "text",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  3
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "PasswordHash",
+                                         "data_type":  "text",
+                                         "udt_name":  "text",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  4
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "Role",
+                                         "data_type":  "text",
+                                         "udt_name":  "text",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  5
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "CreatedAt",
+                                         "data_type":  "timestamp with time zone",
+                                         "udt_name":  "timestamptz",
+                                         "character_maximum_length":  null,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  6
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "PhoneNumber",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  30,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  7
+                                     },
+                                     {
+                                         "table_name":  "Users",
+                                         "column_name":  "ProfilePhotoUrl",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  2048,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "YES",
+                                         "column_default":  null,
+                                         "ordinal_position":  8
+                                     },
+                                     {
+                                         "table_name":  "__EFMigrationsHistory",
+                                         "column_name":  "MigrationId",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  150,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  1
+                                     },
+                                     {
+                                         "table_name":  "__EFMigrationsHistory",
+                                         "column_name":  "ProductVersion",
+                                         "data_type":  "character varying",
+                                         "udt_name":  "varchar",
+                                         "character_maximum_length":  32,
+                                         "numeric_precision":  null,
+                                         "numeric_scale":  null,
+                                         "is_nullable":  "NO",
+                                         "column_default":  null,
+                                         "ordinal_position":  2
+                                     }
+                                 ],
+                     "constraints":  [
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "BookingLocations_Address_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Address\""
+                                         },
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "BookingLocations_BookingId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"BookingId\""
+                                         },
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "BookingLocations_City_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"City\""
+                                         },
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "BookingLocations_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "FK_BookingLocations_Bookings_BookingId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"BookingId\") REFERENCES \"Bookings\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "BookingLocations",
+                                             "name":  "PK_BookingLocations",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "BookingStatusHistories_BookingId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"BookingId\""
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "BookingStatusHistories_ChangedBy_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ChangedBy\""
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "BookingStatusHistories_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "BookingStatusHistories_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "BookingStatusHistories_NewStatus_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"NewStatus\""
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "FK_BookingStatusHistories_Bookings_BookingId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"BookingId\") REFERENCES \"Bookings\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "BookingStatusHistories",
+                                             "name":  "PK_BookingStatusHistories",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "AK_Bookings_Id_CustomerId_StudioId",
+                                             "type":  "u",
+                                             "validated":  true,
+                                             "definition":  "UNIQUE (\"Id\", \"CustomerId\", \"StudioId\")"
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_BookingDate_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"BookingDate\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_CustomerId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CustomerId\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_EndTime_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"EndTime\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_Location_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Location\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_PackageId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PackageId\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_StartTime_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StartTime\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_Status_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Status\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "Bookings_TotalPrice_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"TotalPrice\""
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "FK_Bookings_PhotographyPackages_PackageId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"PackageId\") REFERENCES \"PhotographyPackages\"(\"Id\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "FK_Bookings_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "FK_Bookings_Users_CustomerId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"CustomerId\") REFERENCES \"Users\"(\"Id\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Bookings",
+                                             "name":  "PK_Bookings",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "FK_Notifications_Bookings_BookingId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"BookingId\") REFERENCES \"Bookings\"(\"Id\") ON DELETE SET NULL"
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "FK_Notifications_Users_CustomerId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"CustomerId\") REFERENCES \"Users\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_CustomerId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CustomerId\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_IsRead_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"IsRead\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_Message_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Message\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_Title_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Title\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "Notifications_Type_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Type\""
+                                         },
+                                         {
+                                             "table_name":  "Notifications",
+                                             "name":  "PK_Notifications",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "FK_PackageAddons_PhotographyPackages_PackageId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"PackageId\") REFERENCES \"PhotographyPackages\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_Description_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Description\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_Name_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Name\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_PackageId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PackageId\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_Price_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Price\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_UpdatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"UpdatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "PackageAddons",
+                                             "name":  "PackageAddons_pkey",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackageServices",
+                                             "name":  "FK_PhotographyPackageServices_PhotographyPackages_PhotographyP~",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"PhotographyPackageId\") REFERENCES \"PhotographyPackages\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackageServices",
+                                             "name":  "FK_PhotographyPackageServices_StudioServices_StudioServiceId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioServiceId\") REFERENCES \"StudioServices\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackageServices",
+                                             "name":  "PhotographyPackageServices_PhotographyPackageId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PhotographyPackageId\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackageServices",
+                                             "name":  "PhotographyPackageServices_StudioServiceId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioServiceId\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackageServices",
+                                             "name":  "PhotographyPackageServices_pkey",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"PhotographyPackageId\", \"StudioServiceId\")"
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "FK_PhotographyPackages_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_AdditionalPhotographerRate_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"AdditionalPhotographerRate\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_AlbumIncluded_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"AlbumIncluded\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_BasePrice_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"BasePrice\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Category_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Category\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_CoverImageUrl_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CoverImageUrl\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Description_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Description\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_DurationHours_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"DurationHours\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Duration_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Duration\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_EditedPhotoCount_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"EditedPhotoCount\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_ExtraHourRate_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ExtraHourRate\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Name_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Name\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_NumberOfPhotographers_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"NumberOfPhotographers\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_PackageName_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PackageName\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Price_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Price\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_Status_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Status\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_UpdatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"UpdatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_VideoIncluded_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"VideoIncluded\""
+                                         },
+                                         {
+                                             "table_name":  "PhotographyPackages",
+                                             "name":  "PhotographyPackages_pkey",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "CK_Reviews_Rating",
+                                             "type":  "c",
+                                             "validated":  true,
+                                             "definition":  "CHECK (((\"Rating\" \u003e= 1) AND (\"Rating\" \u003c= 5)))"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "FK_Reviews_Bookings_BookingId_CustomerId_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"BookingId\", \"CustomerId\", \"StudioId\") REFERENCES \"Bookings\"(\"Id\", \"CustomerId\", \"StudioId\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "FK_Reviews_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "FK_Reviews_Users_CustomerId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"CustomerId\") REFERENCES \"Users\"(\"Id\") ON DELETE RESTRICT"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "PK_Reviews",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_BookingId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"BookingId\""
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_CustomerId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CustomerId\""
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_Rating_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Rating\""
+                                         },
+                                         {
+                                             "table_name":  "Reviews",
+                                             "name":  "Reviews_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "FK_StudioAvailabilities_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "PK_StudioAvailabilities",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "StudioAvailabilities_Date_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Date\""
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "StudioAvailabilities_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "StudioAvailabilities_IsAvailable_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"IsAvailable\""
+                                         },
+                                         {
+                                             "table_name":  "StudioAvailabilities",
+                                             "name":  "StudioAvailabilities_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "FK_StudioPortfolioImages_StudioPortfolios_StudioPortfolioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioPortfolioId\") REFERENCES \"StudioPortfolios\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "PK_StudioPortfolioImages",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "StudioPortfolioImages_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "StudioPortfolioImages_DisplayOrder_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"DisplayOrder\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "StudioPortfolioImages_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "StudioPortfolioImages_ImageUrl_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ImageUrl\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolioImages",
+                                             "name":  "StudioPortfolioImages_StudioPortfolioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioPortfolioId\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "FK_StudioPortfolios_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "PK_StudioPortfolios",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_Category_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Category\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_Description_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Description\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_ImageUrl_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ImageUrl\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_Title_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Title\""
+                                         },
+                                         {
+                                             "table_name":  "StudioPortfolios",
+                                             "name":  "StudioPortfolios_UpdatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"UpdatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "FK_StudioServices_Studios_StudioId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"StudioId\") REFERENCES \"Studios\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "PK_StudioServices",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_Description_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Description\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_PackageDetails_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PackageDetails\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_ServiceName_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ServiceName\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_StartingPrice_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StartingPrice\""
+                                         },
+                                         {
+                                             "table_name":  "StudioServices",
+                                             "name":  "StudioServices_StudioId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioId\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "CK_Studios_Coordinates",
+                                             "type":  "c",
+                                             "validated":  true,
+                                             "definition":  "CHECK ((((\"Latitude\" IS NULL) AND (\"Longitude\" IS NULL)) OR ((\"Latitude\" IS NOT NULL) AND (\"Longitude\" IS NOT NULL) AND ((\"Latitude\" \u003e= (\u0027-90\u0027::integer)::numeric) AND (\"Latitude\" \u003c= (90)::numeric)) AND ((\"Longitude\" \u003e= (\u0027-180\u0027::integer)::numeric) AND (\"Longitude\" \u003c= (180)::numeric)))))"
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "FK_Studios_Users_UserId",
+                                             "type":  "f",
+                                             "validated":  true,
+                                             "definition":  "FOREIGN KEY (\"UserId\") REFERENCES \"Users\"(\"Id\") ON DELETE CASCADE"
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "PK_Studios",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_Address_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Address\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_ContactNumber_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ContactNumber\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_CoverPhotoUrl_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CoverPhotoUrl\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_Description_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Description\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_Email_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Email\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_ExperienceYears_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ExperienceYears\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_Location_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Location\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_LogoUrl_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"LogoUrl\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_PhotographyTypes_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PhotographyTypes\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_ProfileImage_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ProfileImage\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_StartingPrice_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StartingPrice\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_StudioName_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"StudioName\""
+                                         },
+                                         {
+                                             "table_name":  "Studios",
+                                             "name":  "Studios_UserId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"UserId\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "PK_Users",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"Id\")"
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_CreatedAt_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"CreatedAt\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_Email_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Email\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_FullName_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"FullName\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_Id_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Id\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_PasswordHash_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"PasswordHash\""
+                                         },
+                                         {
+                                             "table_name":  "Users",
+                                             "name":  "Users_Role_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"Role\""
+                                         },
+                                         {
+                                             "table_name":  "__EFMigrationsHistory",
+                                             "name":  "PK___EFMigrationsHistory",
+                                             "type":  "p",
+                                             "validated":  true,
+                                             "definition":  "PRIMARY KEY (\"MigrationId\")"
+                                         },
+                                         {
+                                             "table_name":  "__EFMigrationsHistory",
+                                             "name":  "__EFMigrationsHistory_MigrationId_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"MigrationId\""
+                                         },
+                                         {
+                                             "table_name":  "__EFMigrationsHistory",
+                                             "name":  "__EFMigrationsHistory_ProductVersion_not_null",
+                                             "type":  "n",
+                                             "validated":  true,
+                                             "definition":  "NOT NULL \"ProductVersion\""
+                                         }
+                                     ],
+                     "coordinateExpression":  "(((\"Latitude\" IS NULL) AND (\"Longitude\" IS NULL)) OR ((\"Latitude\" IS NOT NULL) AND (\"Longitude\" IS NOT NULL) AND ((\"Latitude\" \u003e= (\u0027-90\u0027::integer)::numeric) AND (\"Latitude\" \u003c= (90)::numeric)) AND ((\"Longitude\" \u003e= (\u0027-180\u0027::integer)::numeric) AND (\"Longitude\" \u003c= (180)::numeric))))",
+                     "enabledEventTriggers":  0
+                 },
+    "data":  [
+                 {
+                     "table_name":  "__EFMigrationsHistory",
+                     "row_count":  1,
+                     "fingerprint":  "e284e53611bc6aca24886f49e75d033b"
+                 },
+                 {
+                     "table_name":  "BookingLocations",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "Bookings",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "BookingStatusHistories",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "Notifications",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "PackageAddons",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "PhotographyPackages",
+                     "row_count":  1,
+                     "fingerprint":  "8dd1b88109fb590a4564046b2134d935"
+                 },
+                 {
+                     "table_name":  "PhotographyPackageServices",
+                     "row_count":  1,
+                     "fingerprint":  "82783bb708359a12de509972f0756825"
+                 },
+                 {
+                     "table_name":  "Reviews",
+                     "row_count":  0,
+                     "fingerprint":  "d41d8cd98f00b204e9800998ecf8427e"
+                 },
+                 {
+                     "table_name":  "StudioAvailabilities",
+                     "row_count":  1,
+                     "fingerprint":  "3f699f484b30155fc000a7163be9ab04"
+                 },
+                 {
+                     "table_name":  "StudioPortfolioImages",
+                     "row_count":  4,
+                     "fingerprint":  "1caba85a3381750b6eccb6378f05dcae"
+                 },
+                 {
+                     "table_name":  "StudioPortfolios",
+                     "row_count":  2,
+                     "fingerprint":  "aa37600161957b3071bf869fe838a4bc"
+                 },
+                 {
+                     "table_name":  "Studios",
+                     "row_count":  1,
+                     "fingerprint":  "c123dafb333932e3a9b5a6d5da949468"
+                 },
+                 {
+                     "table_name":  "StudioServices",
+                     "row_count":  1,
+                     "fingerprint":  "7caee2ba52226fe3386f8e79130681aa"
+                 },
+                 {
+                     "table_name":  "Users",
+                     "row_count":  6,
+                     "fingerprint":  "03298d1e8049253f53ba01d470c0f196"
+                 }
+             ]
+}

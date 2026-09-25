@@ -5,6 +5,7 @@ import Button from "./components/common/Button";
 import Card from "./components/common/Card";
 import AuthPage from "./pages/auth/AuthPage";
 import StudioDashboard from "./pages/Studio/StudioDashboard";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
@@ -27,7 +28,8 @@ function AppContent() {
   const { isAuthenticated, user } = useAuth();
 
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  const authenticatedRolePath = { studio: "/studio/dashboard", customer: "/customer", admin: "/admin" }[user?.role?.toLowerCase()];
+  const normalizedRole = typeof user?.role === "string" ? user.role.trim().toLowerCase() : "";
+  const authenticatedRolePath = { studio: "/studio/dashboard", customer: "/customer", admin: "/admin" }[normalizedRole];
   if (path === "/auth" && isAuthenticated && authenticatedRolePath) {
     window.location.replace(authenticatedRolePath);
     return null;
@@ -47,15 +49,46 @@ function AppContent() {
     "/studio/packages": "packages",
     "/studio/bookings": "bookings",
     "/studio/schedule": "schedule",
+    "/studio/reviews": "reviews",
+    "/studio/customers": "customers",
+    "/studio/ai-workflows": "aiWorkflows",
   };
   if (studioPages[path]) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page={studioPages[path]} /></ProtectedRoute>;
   const bookingDetailsMatch = path.match(/^\/studio\/bookings\/(\d+)$/);
+  const workflowDetailsMatch = path.match(/^\/studio\/ai-workflows\/([^/]+)$/);
+  if (workflowDetailsMatch) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page="aiWorkflowDetails" workflowId={workflowDetailsMatch[1]} /></ProtectedRoute>;
+  const customerDetailsMatch = path.match(/^\/studio\/customers\/([^/]+)$/);
+  const reviewDetailsMatch = path.match(/^\/studio\/reviews\/([^/]+)$/);
+  if (reviewDetailsMatch) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page="reviewDetails" reviewId={reviewDetailsMatch[1]} /></ProtectedRoute>;
+  if (customerDetailsMatch) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page="customerDetails" customerId={customerDetailsMatch[1]} /></ProtectedRoute>;
   if (bookingDetailsMatch) return <ProtectedRoute allowedRoles={["Studio"]}><StudioDashboard page="bookingDetails" bookingId={bookingDetailsMatch[1]} /></ProtectedRoute>;
   if (path.startsWith("/studio/")) {
     window.location.replace("/studio/dashboard");
     return null;
   }
-  if (path === "/admin") return <ProtectedRoute allowedRoles={["Admin"]}><DashboardPlaceholder role="Admin" /></ProtectedRoute>;
+  if (path === "/admin") {
+    window.location.replace("/admin/dashboard");
+    return null;
+  }
+  const adminDetailMatch = path.match(/^\/admin\/(studios|customers|bookings)\/([^/]+)$/);
+  if (adminDetailMatch) {
+    const detailPage = { studios: "studio", customers: "customer", bookings: "booking" }[adminDetailMatch[1]];
+    return <ProtectedRoute allowedRoles={["Admin"]}><AdminDashboard page={detailPage} id={adminDetailMatch[2]} /></ProtectedRoute>;
+  }
+  const adminPages = {
+    "/admin/dashboard": "dashboard",
+    "/admin/studios": "studios",
+    "/admin/customers": "customers",
+    "/admin/bookings": "bookings",
+    "/admin/reviews": "reviews",
+    "/admin/reports": "reports",
+    "/admin/profile": "profile",
+  };
+  if (adminPages[path]) return <ProtectedRoute allowedRoles={["Admin"]}><AdminDashboard page={adminPages[path]} /></ProtectedRoute>;
+  if (path.startsWith("/admin/")) {
+    window.location.replace("/admin/dashboard");
+    return null;
+  }
 
   const getCardStyle = (index) => {
     const rawOffset = index - activeCard;

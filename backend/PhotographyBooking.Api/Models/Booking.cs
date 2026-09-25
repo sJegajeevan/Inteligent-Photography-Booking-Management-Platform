@@ -4,11 +4,13 @@ public class Booking
 {
     public int Id { get; set; }
 
-    // These IDs will be connected to the shared Customer, Studio, and Package
-    // entities when those modules are available.
     public int CustomerId { get; set; }
-    public int StudioId { get; set; }
-    public int PackageId { get; set; }
+    public Guid StudioId { get; set; }
+    public Guid PackageId { get; set; }
+
+    public User Customer { get; set; } = null!;
+    public Studio Studio { get; set; } = null!;
+    public PhotographyPackage Package { get; set; } = null!;
 
     public DateOnly BookingDate { get; set; }
     public TimeOnly StartTime { get; set; }
@@ -18,6 +20,9 @@ public class Booking
     public string? Notes { get; set; }
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
     public decimal TotalPrice { get; set; }
+    // Server-calculated selections and prices at creation; null for legacy bookings.
+    // Keep this snapshot unchanged when package prices or add-ons change later.
+    public string? PricingSnapshotJson { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

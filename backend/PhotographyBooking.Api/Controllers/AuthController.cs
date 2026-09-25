@@ -79,7 +79,19 @@ public class AuthController : ControllerBase
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+        // Authentication only needs the original account columns. Optional profile
+        // fields may still be awaiting their separately managed schema migration.
+        var user = await _dbContext.Users.AsNoTracking()
+            .Where(u => u.Email.ToLower() == normalizedEmail)
+            .Select(u => new User
+            {
+                Id = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                Role = u.Role,
+                PasswordHash = u.PasswordHash
+            })
+            .FirstOrDefaultAsync();
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return Unauthorized(new { message = "Invalid email or password." });
@@ -103,9 +115,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Me()
     {
         if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return Unauthorized();
-        var user = await _dbContext.Users.AsNoTracking().SingleOrDefaultAsync(item => item.Id == userId);
+        var user = await _dbContext.Users.AsNoTracking()
+            .Where(item => item.Id == userId)
+            .Select(item => new { item.Id, item.FullName, item.Email, item.Role })
+            .SingleOrDefaultAsync();
         if (user is null) return Unauthorized();
-        return Ok(new { user.Id, user.FullName, user.Email, user.Role });
+        return Ok(user);
     }
 
     private string GenerateToken(User user)

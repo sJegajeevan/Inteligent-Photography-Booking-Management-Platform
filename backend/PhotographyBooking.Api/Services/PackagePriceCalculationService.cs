@@ -22,7 +22,7 @@ public class PackagePriceCalculationService
         return Calculate(package, request);
     }
 
-    private static (PackagePriceCalculationResponseDto? Result, string? Error) Calculate(PhotographyPackage? package, PackagePriceCalculationRequestDto request)
+    internal static (PackagePriceCalculationResponseDto? Result, string? Error) Calculate(PhotographyPackage? package, PackagePriceCalculationRequestDto request)
     {
         if (package is null) return (null, "Package was not found.");
         if (request.ExtraHours < 0 || request.AdditionalPhotographers < 0) return (null, "Extra hours and additional photographers cannot be negative.");

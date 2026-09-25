@@ -1,0 +1,29 @@
+diff --git a/backend/PhotographyBooking.Api/Models/Studio.cs b/backend/PhotographyBooking.Api/Models/Studio.cs
+--- a/backend/PhotographyBooking.Api/Models/Studio.cs
++++ b/backend/PhotographyBooking.Api/Models/Studio.cs
+@@ -8,6 +8,9 @@
+     public string Description { get; set; } = string.Empty;
+     public string Location { get; set; } = string.Empty;
+     public string Address { get; set; } = string.Empty;
++    // Unknown coordinates remain null; never substitute (0, 0).
++    public decimal? Latitude { get; set; }
++    public decimal? Longitude { get; set; }
+     public string ContactNumber { get; set; } = string.Empty;
+     public string Email { get; set; } = string.Empty;
+     public int ExperienceYears { get; set; }
+diff --git a/backend/PhotographyBooking.Api/Data/ApplicationDbContext.cs b/backend/PhotographyBooking.Api/Data/ApplicationDbContext.cs
+--- a/backend/PhotographyBooking.Api/Data/ApplicationDbContext.cs
++++ b/backend/PhotographyBooking.Api/Data/ApplicationDbContext.cs
+@@ -122,6 +122,12 @@
+             entity.Property(s => s.Description).HasMaxLength(1000);
+             entity.Property(s => s.Location).HasMaxLength(160);
+             entity.Property(s => s.Address).HasMaxLength(240);
++            entity.Property(s => s.Latitude).HasPrecision(9, 6);
++            entity.Property(s => s.Longitude).HasPrecision(9, 6);
++            entity.ToTable("Studios", table => table.HasCheckConstraint("CK_Studios_Coordinates",
++                "(\"Latitude\" IS NULL AND \"Longitude\" IS NULL) OR " +
++                "(\"Latitude\" IS NOT NULL AND \"Longitude\" IS NOT NULL AND " +
++                "\"Latitude\" BETWEEN -90 AND 90 AND \"Longitude\" BETWEEN -180 AND 180)"));
+             entity.Property(s => s.ContactNumber).HasMaxLength(30);
+             entity.Property(s => s.Email).HasMaxLength(254);
+             entity.Property(s => s.PhotographyTypes).HasMaxLength(500);

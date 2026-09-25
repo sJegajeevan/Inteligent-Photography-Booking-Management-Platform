@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  static ThemeData get dark {
+    final colors = ColorScheme.fromSeed(seedColor: const Color(0xFF8461C4), brightness: Brightness.dark);
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: colors,
+      scaffoldBackgroundColor: colors.surface,
+      appBarTheme: AppBarTheme(backgroundColor: colors.surface, centerTitle: false),
+      cardTheme: CardThemeData(
+        color: colors.surfaceContainerLow,
+        elevation: 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colors.surfaceContainerHigh,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8461C4)),

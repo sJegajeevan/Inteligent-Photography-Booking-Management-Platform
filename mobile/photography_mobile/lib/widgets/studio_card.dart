@@ -87,6 +87,10 @@ class StudioCard extends StatelessWidget {
                       .toList(),
                 ),
               ],
+              if (studio.distanceKm != null) ...[
+                const SizedBox(height: 12),
+                Text('${studio.distanceKm!.toStringAsFixed(1)} km away'),
+              ],
               if (studio.priceLabel != null) ...[
                 const SizedBox(height: 16),
                 Text(

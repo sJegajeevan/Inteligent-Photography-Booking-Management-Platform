@@ -8,6 +8,16 @@ import "./auth.css";
 
 const emptyRegistration = { fullName: "", email: "", password: "", confirmPassword: "", role: "" };
 
+function getRoleFromToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(token.split(".")[1].length / 4) * 4, "=")));
+    const roleClaim = Object.entries(payload).find(([key]) => key === "role" || key.endsWith("/role"))?.[1];
+    return Array.isArray(roleClaim) ? roleClaim[0] : roleClaim;
+  } catch {
+    return "";
+  }
+}
+
 function AuthPage() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState("login");
@@ -85,8 +95,9 @@ function AuthPage() {
           { email: loginForm.email.trim(), password: loginForm.password },
           loginForm.rememberMe
         );
-        const role = response.user?.role?.toLowerCase();
-        window.location.href = role === "studio" ? "/studio/dashboard" : role === "admin" ? "/admin" : "/customer";
+        const role = String(getRoleFromToken(response.token) || response.user?.role || "").trim().toLowerCase();
+        const destination = role === "studio" ? "/studio/dashboard" : role === "admin" ? "/admin" : role === "customer" ? "/customer" : "/auth";
+        window.location.href = destination;
       }
     } catch (error) {
       setMessageType("error");
@@ -102,18 +113,30 @@ function AuthPage() {
   return (
     <>
       <Header />
-      <main className="auth-page">
-        <section className="auth-stage">
-          <div className="auth-brand" aria-hidden="true">
-            <div className="auth-brand-orbit" />
-            <p>SnapSync AI</p>
+      <main className={`auth-page ${isLogin ? "auth-login-page" : "auth-register-page"}`}>
+        <section className={`auth-stage ${isLogin ? "auth-login-stage" : "auth-register-stage"}`}>
+          <div className="auth-showcase">
+            <img src="/images/auth/auth-background.jpg" alt="Photographer capturing a special moment" />
+            <div className="auth-showcase-copy">
+              <p className="auth-showcase-kicker">PHOTOGRAPHY PLATFORM</p>
+              <h2>Capture Life&apos;s<br /><em>Beautiful</em><br />Moments</h2>
+              <span className="auth-showcase-rule" />
+              <p>Book the perfect studio and make your stories last forever.</p>
+              <div className="auth-features" aria-label="Platform features">
+                <span><b aria-hidden="true">◎</b>Book Studios</span>
+                <span><b aria-hidden="true">▧</b>Explore Portfolios</span>
+                <span><b aria-hidden="true">▦</b>Plan Your Moments</span>
+              </div>
+            </div>
           </div>
 
           <Card className="auth-card">
             <div className="auth-card-heading">
               <div>
-                <p className="auth-kicker">PHOTOGRAPHY PLATFORM</p>
-                <h1>{isLogin ? "Sign in to continue" : "Create your account"}</h1>
+                <div className="auth-brand-lockup"><span className="auth-brand-mark" aria-hidden="true">◎</span><strong>SnapSync AI</strong></div>
+                <p className="auth-kicker">{isLogin ? "WELCOME BACK" : "PHOTOGRAPHY PLATFORM"}</p>
+                <h1>{isLogin ? "Sign in to your account" : "Create your account"}</h1>
+                <p className="auth-card-subtitle">{isLogin ? "Capture · Connect · Celebrate" : "Start planning your next story."}</p>
               </div>
             </div>
 

@@ -1,0 +1,25 @@
+.reviews-page { color:#eee8f8; max-width:1180px; margin:auto; }
+.reviews-back { display:inline-block; margin-bottom:20px; color:#705094; font-size:14px; font-weight:650; text-decoration:none; }.reviews-back:hover { text-decoration:underline; }.reviews-back:focus-visible { outline:3px solid #ae86d6; outline-offset:5px; }
+.reviews-detail-layout { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:20px; align-items:start; }.reviews-detail-email { color:#cbbada; overflow-wrap:anywhere; font-size:14px; }.reviews-detail-rating { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin:14px 0 22px; }.reviews-detail-rating .reviews-stars { margin:0; }.reviews-detail-rating strong { color:#e1c5ff; }.reviews-detail-label { color:#cbbada; font-size:12px; margin:0 0 12px; }.reviews-detail-title { margin:0; color:#f5effc; font-size:18px; }
+@media(max-width:760px) { .reviews-detail-layout { grid-template-columns:1fr; } }
+.reviews-heading { padding:30px; margin-bottom:22px; border-radius:22px; background:linear-gradient(125deg,#20192d,#38264f); }
+.reviews-heading > p { margin:0 0 10px; color:#c7afea; font-size:11px; font-weight:750; letter-spacing:2px; }
+.reviews-heading h1 { margin:0 0 10px; color:#fff; font-family:"Cormorant Garamond",Georgia,serif; font-size:clamp(30px,4vw,42px); }
+.reviews-heading > span { color:#cec3dc; font-size:14px; line-height:1.6; }
+.reviews-summary { display:grid; grid-template-columns:1fr 1fr; gap:30px; align-items:center; padding:26px 30px; margin-bottom:22px; border:1px solid #483756; border-radius:20px; background:#2a2036; }
+.reviews-summary > div > span { color:#c9b7de; font-size:11px; letter-spacing:1.5px; }
+.reviews-summary p { margin:8px 0; color:#bdaacb; }.reviews-summary strong { color:#fff; font-size:48px; font-weight:650; }.reviews-summary small { color:#c9b7de; }
+.reviews-distribution { display:grid; gap:9px; }.reviews-distribution > div { display:grid; grid-template-columns:34px 1fr 32px; align-items:center; gap:12px; font-size:12px; }.reviews-distribution > div > span:last-child { text-align:right; }
+.reviews-distribution progress { width:100%; height:7px; border:0; border-radius:8px; overflow:hidden; background:#493952; accent-color:#be99ee; }.reviews-distribution progress::-webkit-progress-bar { background:#493952; }.reviews-distribution progress::-webkit-progress-value { background:#be99ee; }.reviews-distribution progress::-moz-progress-bar { background:#be99ee; }
+.reviews-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-items:start; }
+.reviews-card { min-width:0; padding:24px; border:1px solid #46354e; border-radius:20px; background:linear-gradient(145deg,#2a2234,#241d2d); box-shadow:0 8px 24px #20152d12; }
+.reviews-card header { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; }.reviews-customer { display:flex; gap:12px; align-items:center; min-width:0; }.reviews-customer > div { min-width:0; }
+.reviews-avatar { display:grid; place-items:center; width:42px; height:42px; flex-shrink:0; border-radius:14px; color:#e6d5ff; background:#493359; font-weight:700; }
+.reviews-customer h2 { margin:0 0 5px; font-family:inherit; font-weight:600; line-height:1.4; font-size:15px; color:#f5effc; overflow-wrap:anywhere; }.reviews-customer div > span,.reviews-card time { color:#c2b1d0; font-size:12px; }
+.reviews-stars { display:inline-flex; gap:4px; margin:18px 0 10px; font-size:21px; color:#685675; }.reviews-stars .filled { color:#d7b3ff; }
+.reviews-comment { margin:0; color:#dfd5e9; font-size:14px; line-height:1.8; white-space:pre-wrap; overflow-wrap:anywhere; }.reviews-comment.collapsed { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.reviews-card footer { margin-top:20px; padding-top:14px; border-top:1px solid #48374f; }.reviews-card button,.reviews-state button { border:1px solid #74568f; border-radius:10px; background:#49315f; color:#f2e5ff; padding:10px 15px; font:inherit; font-size:13px; font-weight:650; cursor:pointer; }.reviews-card button:hover,.reviews-state button:hover { background:#63437e; }.reviews-page button:focus-visible { outline:3px solid #ceadf3; outline-offset:3px; }
+.reviews-details { display:grid; gap:12px; margin:20px 0 0; padding:16px; border-radius:12px; background:#1f1828; }.reviews-details dt { color:#baa5ca; font-size:11px; }.reviews-details dd { margin:4px 0 0; font-size:13px; overflow-wrap:anywhere; }
+.reviews-state { padding:55px 24px; border:1px solid #493752; border-radius:20px; background:#292032; text-align:center; color:#d0c1dd; }.reviews-state h2 { color:#f3eafa; font-size:23px; }.reviews-state p { max-width:440px; margin:12px auto 20px; line-height:1.7; }.reviews-empty-icon { color:#c3a0ed; font-size:42px; }.reviews-error { border-color:#a76583; }
+@media(max-width:850px) { .reviews-list { grid-template-columns:1fr; } }
+@media(max-width:520px) { .reviews-summary { grid-template-columns:1fr; gap:22px; }.reviews-heading,.reviews-summary,.reviews-card { padding:22px; }.reviews-heading { border-radius:16px; } }

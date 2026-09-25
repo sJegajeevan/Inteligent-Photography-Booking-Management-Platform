@@ -8,6 +8,7 @@ const emptyForm = { date: "", isAvailable: true, startTime: "09:00", endTime: "1
 const pageSize = 5;
 const dateFormatter = new Intl.DateTimeFormat("en-LK", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 const formatDate = (date) => dateFormatter.format(new Date(`${date}T00:00:00Z`));
+const formatDateParts = (date) => { const value = new Date(`${date}T00:00:00Z`); return { month: new Intl.DateTimeFormat("en-LK", { month: "short", timeZone: "UTC" }).format(value), day: new Intl.DateTimeFormat("en-LK", { day: "2-digit", timeZone: "UTC" }).format(value), year: new Intl.DateTimeFormat("en-LK", { year: "numeric", timeZone: "UTC" }).format(value) }; };
 function getLocalDate() {
   const now = new Date();
   const year = now.getFullYear();
@@ -82,8 +83,8 @@ function StudioAvailability({ items, isLoading, error, onRetry, onCreate, onUpda
       <label className="management-field"><span>Sort By</span><select value={sortBy} onChange={resetPage(setSortBy)} aria-label="Sort availability"><option value="nearest">Date: Nearest First</option><option value="latest">Date: Latest First</option></select></label>
     </div>}
     {isLoading ? <p className="portfolio-feedback">Loading availability…</p> : error ? <div className="portfolio-feedback error"><p>{error}</p><button type="button" onClick={onRetry}>Try again</button></div> : availabilityItems.length === 0 ? <div className="availability-empty"><p>No availability configured yet.</p></div> : filteredItems.length === 0 ? <div className="availability-empty"><p>No availability records match the selected filters.</p></div> : <><div className="availability-records">{visibleItems.map((item) => <div className="availability-record" key={item.id}>
-      <div className="availability-record-main"><strong>{formatDate(item.date)}</strong><span className={`availability-chip ${item.isAvailable ? "available" : "unavailable"}`}>{item.isAvailable ? "Available" : "Unavailable"}</span></div>
-      <dl><div><dt>Start Time</dt><dd>{formatTime(item.startTime)}</dd></div><div><dt>End Time</dt><dd>{formatTime(item.endTime)}</dd></div><div><dt>Notes</dt><dd>{item.notes || "—"}</dd></div></dl>
+      <div className="availability-record-main"><div className="availability-date"><span className="availability-date-icon" aria-hidden="true">{formatDateParts(item.date).month}<strong>{formatDateParts(item.date).day}</strong><small>{formatDateParts(item.date).year}</small></span><strong className="availability-date-full">{formatDate(item.date)}</strong></div><span className={`availability-chip ${item.isAvailable ? "available" : "unavailable"}`}><span aria-hidden="true">●</span>{item.isAvailable ? "Available" : "Unavailable"}</span></div>
+      <dl><div><span className="availability-detail-icon" aria-hidden="true">◷</span><dt>Start Time</dt><dd>{formatTime(item.startTime)}</dd></div><div><span className="availability-detail-icon" aria-hidden="true">◴</span><dt>End Time</dt><dd>{formatTime(item.endTime)}</dd></div><div><span className="availability-detail-icon" aria-hidden="true">▤</span><dt>Notes</dt><dd>{item.notes || "No notes added"}</dd></div></dl>
       <div className="item-actions"><button type="button" onClick={() => openEdit(item)}>Edit</button><button type="button" className="delete-action" onClick={() => remove(item)} disabled={deletingId === item.id}>{deletingId === item.id ? "Deleting…" : "Delete"}</button></div>
     </div>)}</div><Pagination currentPage={safeCurrentPage} totalPages={totalPages} onPageChange={setCurrentPage} /></>}
     {success && <p className="portfolio-feedback success" role="status">{success}</p>}{actionError && !editorOpen && <p className="portfolio-feedback error" role="alert">{actionError}</p>}

@@ -22,6 +22,66 @@ namespace PhotographyBooking.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PhotographyBooking.Api.Models.User", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("FullName").IsRequired().HasColumnType("text");
+                    b.Property<string>("Email").IsRequired().HasColumnType("text");
+                    b.Property<string>("PasswordHash").IsRequired().HasColumnType("text");
+                    b.Property<string>("Role").IsRequired().HasColumnType("text");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PhotographyBooking.Api.Models.Studio", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<int>("UserId").HasColumnType("integer");
+                    b.Property<string>("StudioName").IsRequired().HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<string>("Description").IsRequired().HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<string>("Location").IsRequired().HasMaxLength(160).HasColumnType("character varying(160)");
+                    b.Property<string>("Address").IsRequired().HasMaxLength(240).HasColumnType("character varying(240)");
+                    b.Property<string>("ContactNumber").IsRequired().HasMaxLength(30).HasColumnType("character varying(30)");
+                    b.Property<string>("Email").IsRequired().HasMaxLength(254).HasColumnType("character varying(254)");
+                    b.Property<int>("ExperienceYears").HasColumnType("integer");
+                    b.Property<string>("PhotographyTypes").IsRequired().HasMaxLength(500).HasColumnType("character varying(500)");
+                    b.Property<decimal>("StartingPrice").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<string>("LogoUrl").IsRequired().HasMaxLength(2048).HasColumnType("character varying(2048)");
+                    b.Property<string>("CoverPhotoUrl").IsRequired().HasMaxLength(2048).HasColumnType("character varying(2048)");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId").IsUnique();
+                    b.ToTable("Studios");
+                });
+
+            modelBuilder.Entity("PhotographyBooking.Api.Models.PhotographyPackage", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<Guid>("StudioId").HasColumnType("uuid");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(160).HasColumnType("character varying(160)");
+                    b.Property<decimal>("BasePrice").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<decimal>("ExtraHourRate").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<decimal>("AdditionalPhotographerRate").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<decimal>("DurationHours").HasPrecision(5, 2).HasColumnType("numeric(5,2)");
+                    b.Property<int>("EditedPhotoCount").HasColumnType("integer");
+                    b.Property<bool>("AlbumIncluded").HasColumnType("boolean");
+                    b.Property<bool>("VideoIncluded").HasColumnType("boolean");
+                    b.Property<string>("PackageName").IsRequired().HasMaxLength(160).HasColumnType("character varying(160)");
+                    b.Property<string>("Category").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<string>("Description").IsRequired().HasMaxLength(2000).HasColumnType("character varying(2000)");
+                    b.Property<decimal>("Price").HasPrecision(12, 2).HasColumnType("numeric(12,2)");
+                    b.Property<string>("Duration").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<int>("NumberOfPhotographers").HasColumnType("integer");
+                    b.Property<string>("CoverImageUrl").IsRequired().HasMaxLength(2048).HasColumnType("character varying(2048)");
+                    b.Property<string>("Status").IsRequired().HasMaxLength(20).HasColumnType("character varying(20)");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("StudioId");
+                    b.ToTable("PhotographyPackages");
+                });
+
             modelBuilder.Entity("PhotographyBooking.Api.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -51,8 +111,8 @@ namespace PhotographyBooking.Api.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid");
 
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time without time zone");
@@ -60,8 +120,8 @@ namespace PhotographyBooking.Api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<int>("StudioId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
@@ -73,6 +133,10 @@ namespace PhotographyBooking.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Bookings");
+                    b.HasAlternateKey("Id", "CustomerId", "StudioId");
+                    b.HasIndex("CustomerId");
+                    b.HasIndex("StudioId");
+                    b.HasIndex("PackageId");
                 });
 
             modelBuilder.Entity("PhotographyBooking.Api.Models.BookingLocation", b =>
@@ -176,9 +240,72 @@ namespace PhotographyBooking.Api.Migrations
 
             modelBuilder.Entity("PhotographyBooking.Api.Models.Booking", b =>
                 {
+                    b.HasOne("PhotographyBooking.Api.Models.User", "Customer")
+                        .WithMany().HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("PhotographyBooking.Api.Models.Studio", "Studio")
+                        .WithMany().HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("PhotographyBooking.Api.Models.PhotographyPackage", "Package")
+                        .WithMany().HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.Navigation("Customer");
+                    b.Navigation("Studio");
+                    b.Navigation("Package");
                     b.Navigation("BookingLocation");
 
                     b.Navigation("StatusHistory");
+                });
+
+            modelBuilder.Entity("PhotographyBooking.Api.Models.Studio", b =>
+                {
+                    b.HasOne("PhotographyBooking.Api.Models.User", "User")
+                        .WithOne().HasForeignKey("PhotographyBooking.Api.Models.Studio", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PhotographyBooking.Api.Models.PhotographyPackage", b =>
+                {
+                    b.HasOne("PhotographyBooking.Api.Models.Studio", "Studio")
+                        .WithMany().HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("Studio");
+                });
+            modelBuilder.Entity("PhotographyBooking.Api.Models.Review", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<int>("BookingId").HasColumnType("integer");
+                    b.Property<int>("CustomerId").HasColumnType("integer");
+                    b.Property<Guid>("StudioId").HasColumnType("uuid");
+                    b.Property<int>("Rating").HasColumnType("integer");
+                    b.Property<string>("Comment").HasMaxLength(2000).HasColumnType("character varying(2000)");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("BookingId").IsUnique();
+                    b.HasIndex("BookingId", "CustomerId", "StudioId").IsUnique();
+                    b.HasIndex("CustomerId");
+                    b.HasIndex("StudioId", "CreatedAt");
+                    b.ToTable("Reviews", table => table.HasCheckConstraint(
+                        "CK_Reviews_Rating", "\"Rating\" BETWEEN 1 AND 5"));
+                });
+
+            modelBuilder.Entity("PhotographyBooking.Api.Models.Review", b =>
+                {
+                    b.HasOne("PhotographyBooking.Api.Models.Booking", "Booking")
+                        .WithOne()
+                        .HasForeignKey("PhotographyBooking.Api.Models.Review", "BookingId", "CustomerId", "StudioId")
+                        .HasPrincipalKey("PhotographyBooking.Api.Models.Booking", "Id", "CustomerId", "StudioId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("PhotographyBooking.Api.Models.User", "Customer")
+                        .WithMany().HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("PhotographyBooking.Api.Models.Studio", "Studio")
+                        .WithMany().HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.Navigation("Booking");
+                    b.Navigation("Customer");
+                    b.Navigation("Studio");
                 });
 #pragma warning restore 612, 618
         }

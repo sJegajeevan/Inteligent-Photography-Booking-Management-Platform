@@ -1,0 +1,2 @@
+# Local database backups contain business/account data; never add them to Git.
+*.backup

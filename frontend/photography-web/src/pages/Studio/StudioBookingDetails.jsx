@@ -66,7 +66,7 @@ export default function StudioBookingDetails({ bookingId }) {
     if (!booking || !action) return;
     setIsSaving(true); setFeedback("");
     try {
-      const changedBy = user?.fullName || user?.email || "Studio Owner";
+      const changedBy = user?.fullName || user?.email || "Authenticated user";
       if (action === "Cancelled") await cancelBooking(token, booking.id, changedBy, reason);
       else await updateBookingStatus(token, booking.id, action, changedBy, reason);
       setAction("");

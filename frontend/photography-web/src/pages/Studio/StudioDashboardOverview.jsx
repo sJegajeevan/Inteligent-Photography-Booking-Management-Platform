@@ -2,6 +2,7 @@ import { useState } from "react";
 import Card from "../../components/common/Card";
 import { StudioIcon } from "./StudioLayout";
 import { resolvePortfolioImageUrl } from "../../services/studioPortfolioService";
+import StudioPhotographyHero from "./StudioPhotographyHero";
 
 const dateFormatter = new Intl.DateTimeFormat("en-LK", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
 const timeFormatter = new Intl.DateTimeFormat("en-LK", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
@@ -12,7 +13,7 @@ function formatTime(value) { if (!/^\d{2}:\d{2}/.test(value || "")) return "Not 
 const go = (path) => window.location.assign(path);
 
 function ImageAvatar({ profile, failedLogoUrl, onLogoError }) {
-  const name = profile?.studioName?.trim() || "Your Studio";
+  const name = profile?.studioName?.trim() || "Studio";
   const image = profile?.logoUrl?.trim();
   return <span className="dashboard-profile-avatar">{image && image !== failedLogoUrl ? <img src={image} alt={`${name} logo`} onError={() => onLogoError(image)} /> : name.charAt(0).toUpperCase()}</span>;
 }
@@ -30,7 +31,7 @@ export default function StudioDashboardOverview(props) {
   const serviceItems = Array.isArray(services) ? services.filter(Boolean) : [];
   const availabilityItems = Array.isArray(availability) ? availability.filter(Boolean) : [];
   const bookingItems = Array.isArray(bookings) ? bookings.filter(Boolean) : [];
-  const studioName = profile?.studioName?.trim() || "Your Studio";
+  const studioName = profile?.studioName?.trim() || (profileError ? "Studio" : "Complete your Studio Profile");
   const upcoming = availabilityItems.filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(dateValue(item.date)) && dateValue(item.date) >= localToday()).sort((a, b) => dateValue(a.date).localeCompare(dateValue(b.date)));
   const recentPortfolio = [...portfolioItems].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 4);
   const bookingCounts = {
@@ -55,7 +56,7 @@ export default function StudioDashboardOverview(props) {
   ];
 
   return <>
-    <section className="dashboard-welcome"><h2>Welcome back, {profileLoading ? "Studio" : studioName}! <span aria-hidden="true">👋</span></h2><p>Here&apos;s what&apos;s happening with your studio.</p></section>
+    <StudioPhotographyHero profile={profile} profileLoading={profileLoading} profileError={profileError} portfolio={portfolio} portfolioLoading={portfolioLoading} portfolioError={portfolioError} />
     <section className="dashboard-metrics" aria-label="Studio statistics">{metrics.map(([icon, tone, label, loading, error, value, detail]) => <Card className="metric-card" key={label}><span className={`metric-icon metric-${tone}`}><StudioIcon name={icon} /></span><div><p>{label}</p><h3><LoadValue loading={loading} error={error}>{value}</LoadValue></h3><small>{error || detail}</small></div></Card>)}</section>
     <section className="booking-dashboard-panel"><div><p className="studio-kicker">BOOKINGS</p><h3>Booking overview</h3><p>Live booking counts from the booking management API.</p></div><button type="button" className="dashboard-primary-button" onClick={() => go("/studio/bookings")}>Manage bookings</button><div className="booking-dashboard-counts">{[["Pending", bookingCounts.pending], ["Confirmed", bookingCounts.confirmed], ["Upcoming", bookingCounts.upcoming], ["Completed", bookingCounts.completed]].map(([label, value]) => <div key={label}><span>{label}</span><strong><LoadValue loading={bookingsLoading} error={bookingsError}>{value}</LoadValue></strong></div>)}</div>{bookingsError && <p className="booking-dashboard-error">{bookingsError}</p>}</section>
     <section className="dashboard-two-column dashboard-primary-row">

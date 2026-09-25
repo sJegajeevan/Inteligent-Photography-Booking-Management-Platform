@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.*.local.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <!-- Historical evidence only: this chain does not describe the existing database.
+       Controlled deployment SQL is maintained under ../database/reconciliation.
+       Keep the original migration files and snapshot unchanged, but never execute them. -->
+  <ItemGroup>
+    <Compile Remove="Migrations/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">

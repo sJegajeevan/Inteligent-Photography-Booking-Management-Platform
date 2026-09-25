@@ -2,16 +2,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PhotographyBooking.Api.DTOs.Bookings;
 
-public class CreateBookingRequest
+public class CreateBookingRequest : IValidatableObject
 {
-    [Range(1, int.MaxValue)]
-    public int CustomerId { get; set; }
+    public Guid StudioId { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int StudioId { get; set; }
+    public Guid PackageId { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int PackageId { get; set; }
+    [Required]
+    public List<Guid> SelectedAddonIds { get; set; } = [];
+
+    [Range(0, 1000)]
+    public int ExtraHours { get; set; }
+
+    [Range(0, 100)]
+    public int AdditionalPhotographers { get; set; }
 
     public DateOnly BookingDate { get; set; }
     public TimeOnly StartTime { get; set; }
@@ -24,6 +28,11 @@ public class CreateBookingRequest
     [MaxLength(1_000)]
     public string? Notes { get; set; }
 
-    [Range(typeof(decimal), "0.01", "9999999999999999.99")]
-    public decimal TotalPrice { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (StudioId == Guid.Empty)
+            yield return new ValidationResult("Select a valid studio.", [nameof(StudioId)]);
+        if (PackageId == Guid.Empty)
+            yield return new ValidationResult("Select a valid package.", [nameof(PackageId)]);
+    }
 }

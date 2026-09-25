@@ -9,12 +9,14 @@ class Studio {
     this.coverImageUrl,
     this.photographyTypes = const [],
     this.startingPrice,
+    this.distanceKm,
   });
 
   final String id, studioName, location, description, descriptionSummary;
   final String? profileImageUrl, coverImageUrl;
   final List<String> photographyTypes;
   final double? startingPrice;
+  final double? distanceKm;
 
   factory Studio.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
@@ -23,8 +25,12 @@ class Studio {
     }
     String text(String key) => json[key] is String ? json[key] as String : '';
     final price = json['startingPrice'];
+    final distance = json['distanceKm'];
     return Studio(
       id: id,
+      distanceKm: distance is num && distance.isFinite && distance >= 0
+          ? distance.toDouble()
+          : null,
       studioName: text('studioName'),
       location: text('location'),
       description: text('description'),

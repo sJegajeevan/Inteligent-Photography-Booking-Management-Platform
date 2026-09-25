@@ -2,8 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PhotographyBooking.Api.DTOs.Studio;
 
-public class UpdateStudioDto
+public class UpdateStudioDto : IValidatableObject
 {
+    [Range(typeof(decimal), "-90", "90")] public decimal? Latitude { get; set; }
+    [Range(typeof(decimal), "-180", "180")] public decimal? Longitude { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Latitude.HasValue != Longitude.HasValue)
+            yield return new ValidationResult("Supply both latitude and longitude, or leave both empty.",
+                [nameof(Latitude), nameof(Longitude)]);
+    }
     [Required, StringLength(120, MinimumLength = 2)] public string StudioName { get; set; } = string.Empty;
     [Required, StringLength(1000, MinimumLength = 10)] public string Description { get; set; } = string.Empty;
     [Required, StringLength(160, MinimumLength = 2)] public string Location { get; set; } = string.Empty;
@@ -13,6 +22,6 @@ public class UpdateStudioDto
     [Range(0, 100)] public int ExperienceYears { get; set; }
     [Required, StringLength(500, MinimumLength = 2)] public string PhotographyTypes { get; set; } = string.Empty;
     [Range(typeof(decimal), "0", "9999999999.99")] public decimal StartingPrice { get; set; }
-    [Url, StringLength(2048)] public string LogoUrl { get; set; } = string.Empty;
-    [Url, StringLength(2048)] public string CoverPhotoUrl { get; set; } = string.Empty;
+    public IFormFile? LogoImage { get; set; }
+    public IFormFile? CoverImage { get; set; }
 }
