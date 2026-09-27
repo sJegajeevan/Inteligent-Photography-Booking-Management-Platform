@@ -9,6 +9,9 @@ public class BookingResponse
     public int CustomerId { get; set; }
     public Guid StudioId { get; set; }
     public Guid PackageId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? StudioName { get; set; }
+    public string? PackageName { get; set; }
     public DateOnly BookingDate { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }

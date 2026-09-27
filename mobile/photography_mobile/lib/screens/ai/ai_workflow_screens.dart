@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../models/ai_workflow.dart';
 import '../../services/ai_workflow_service.dart';
+import '../../models/photography_package.dart';
+import '../booking/my_bookings_screen.dart';
 
 class AiWorkflowsScreen extends StatefulWidget {
   const AiWorkflowsScreen({super.key, this.service});
@@ -88,7 +90,7 @@ class _AiWorkflowsScreenState extends State<AiWorkflowsScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Text(
-                  'Tell us about your session. Your recommended studio reviews the proposal before you book.',
+                  'Find a session for you. Studio approval creates your booking.',
                 ),
               ),
               if (_loading) const LinearProgressIndicator(),
@@ -102,10 +104,7 @@ class _AiWorkflowsScreenState extends State<AiWorkflowsScreen> {
                       title: Text(
                         w.proposal?.packageName ?? 'Photography recommendation',
                       ),
-                      subtitle: Text(
-                        '${w.label}\nProposal version ${w.version}',
-                      ),
-                      isThreeLine: true,
+                      subtitle: Text(w.label),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _open(
                         AiWorkflowStatusScreen(
@@ -176,15 +175,11 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
     ])
       name: TextEditingController(),
   };
-  bool _submitting = false,
-      _processing = false,
-      _uncertain = false,
-      _submitted = false;
+  bool _submitting = false, _uncertain = false, _submitted = false;
   String? _error;
-  Timer? _timer;
+  Map<String, String> _fieldErrors = {};
   @override
   void dispose() {
-    _timer?.cancel();
     for (final field in _fields.values) {
       field.dispose();
     }
@@ -197,6 +192,9 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
     final current = AiRequirements.date(_fields[key]!.text);
     final value = await showDatePicker(
       context: context,
+      helpText: key == 'earliest'
+          ? 'Choose your earliest date'
+          : 'Choose your latest date',
       firstDate: today,
       lastDate: DateTime(today.year + 3, 12, 31),
       initialDate:
@@ -224,25 +222,21 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
       preferredEnd: _fields['end']!.text,
       services: _fields['services']!.text,
     );
-    final invalid = requirements.validate();
-    if (invalid != null) {
-      setState(() => _error = invalid);
+    final invalid = requirements.fieldErrors();
+    setState(() => _fieldErrors = invalid);
+    if (invalid.isNotEmpty) {
       return;
     }
+    FocusScope.of(context).unfocus();
     setState(() {
       _submitting = true;
-      _processing = false;
       _error = null;
-    });
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _processing = true);
     });
     try {
       final workflow = await _service.submit(requirements);
       if (!mounted) {
         return;
       }
-      _timer?.cancel();
       setState(() {
         _submitting = false;
         _submitted = true;
@@ -264,7 +258,6 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
         });
       }
     } finally {
-      _timer?.cancel();
       if (mounted) setState(() => _submitting = false);
     }
   }
@@ -283,6 +276,10 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
       controller: _fields[key],
       enabled: !_submitting && !_uncertain && !_submitted,
       maxLength: max,
+      textInputAction: key == 'services'
+          ? TextInputAction.done
+          : TextInputAction.next,
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       keyboardType: number
           ? const TextInputType.numberWithOptions(decimal: true)
           : date
@@ -291,6 +288,19 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        errorText: _fieldErrors[key],
+        errorMaxLines: 3,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
+        ),
         suffixIcon: date
             ? IconButton(
                 tooltip: 'Choose $label',
@@ -312,16 +322,18 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(20),
             children: [
-              const Text(
+              Text(
                 'Your photography requirements',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Text(
-                  'Prices are in LKR. Dates and preferred times use Sri Lanka time. A recommendation does not reserve a session.',
+                  'Tell us what you need and AI will find a suitable studio, package and available time.',
                 ),
               ),
               _field(
@@ -332,6 +344,13 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
               ),
               _field('location', 'Location', max: 500),
               _field('budget', 'Maximum budget (LKR)', number: true),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                child: Text(
+                  'When is your session? · Sri Lanka time',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
               _field(
                 'earliest',
                 'Earliest date',
@@ -360,22 +379,35 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
                     ),
                   ),
                 ),
-              if (_submitting) const LinearProgressIndicator(),
+              if (_submitting)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: LinearProgressIndicator(
+                    semanticsLabel: 'Finding the best match for you',
+                  ),
+                ),
               FilledButton(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  padding: const EdgeInsets.all(16),
+                ),
                 onPressed: _submitting || _uncertain || _submitted
                     ? null
                     : _submit,
-                child: Text(
-                  _submitting
-                      ? (_processing ? 'Processing…' : 'Submitting…')
-                      : 'Get recommendation',
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _submitting
+                        ? 'Finding the best match for you...'
+                        : 'Get recommendation',
+                  ),
                 ),
               ),
               if (_submitting)
                 const Padding(
                   padding: EdgeInsets.all(12),
                   child: Text(
-                    'Checking studios, packages and available dates. This may take a few minutes.',
+                    'This may take a moment. Please keep this screen open.',
                   ),
                 ),
               if (_uncertain)
@@ -467,6 +499,34 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
   @override
   Widget build(BuildContext context) {
     final w = _workflow, p = _workflow?.proposal;
+    final theme = Theme.of(context);
+    final localizations = MaterialLocalizations.of(context);
+    String time(String value) => localizations.formatTimeOfDay(
+      TimeOfDay(
+        hour: int.parse(value.split(':')[0]),
+        minute: int.parse(value.split(':')[1]),
+      ),
+      alwaysUse24HourFormat: false,
+    );
+    final expiry = w?.expiresAt.toUtc().add(
+      const Duration(hours: 5, minutes: 30),
+    );
+    Widget detail(String label, String value) => Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(value, style: theme.textTheme.titleMedium),
+        ],
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI recommendation'),
@@ -502,6 +562,52 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                            'AI Recommendation',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (p != null) ...[
+                            const SizedBox(height: 24),
+                            detail(
+                              'Recommended studio',
+                              _studio?.trim().isNotEmpty == true
+                                  ? _studio!.trim()
+                                  : 'Studio name unavailable',
+                            ),
+                            detail('Recommended package', p.packageName),
+                            detail('Photography requirement', p.summary),
+                            const Divider(height: 24),
+                            detail(
+                              'Date',
+                              localizations.formatFullDate(
+                                AiRequirements.date(p.date)!,
+                              ),
+                            ),
+                            detail(
+                              'Time · Sri Lanka',
+                              '${time(p.start)} – ${time(p.end)}',
+                            ),
+                            Text(
+                              'Total price',
+                              style: theme.textTheme.labelMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              formatLkr(p.price),
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            detail(
+                              'Customization',
+                              '${p.extraHours} extra hours · ${p.additionalPhotographers} additional photographers${p.addonNames.isEmpty ? '' : '\nAdd-ons: ${p.addonNames.join(', ')}'}',
+                            ),
+                            const Divider(height: 24),
+                          ],
                           Semantics(
                             liveRegion: true,
                             child: Text(
@@ -510,49 +616,45 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text('Current step: ${w.step}'),
-                          Text('Proposal version: ${w.version}'),
                           if (w.status == 'AwaitingApproval')
                             const Text(
-                              'Your selected studio is reviewing this recommendation. Refresh to see its decision.',
+                              'Your recommendation has been sent to the studio for review.',
                             ),
-                          if (w.status == 'Approved')
+                          if (w.status == 'Approved') ...[
+                            Text(
+                              'Recommendation approved',
+                              style: theme.textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
                             const Text(
-                              'Your recommendation was approved. No booking has been created. Book separately through the existing booking flow.',
+                              'Your booking has been created successfully.',
                             ),
+                          ],
                           if (w.status == 'Rejected')
-                            const Text(
-                              'The studio rejected this recommendation. You can request a new recommendation from My AI recommendations.',
-                            ),
+                            const Text('Recommendation was not approved.'),
                           if (w.status == 'RevalidationRequired')
                             const Text(
-                              'The recommendation needs to be refreshed because availability or pricing has changed. You can submit new requirements from My AI recommendations.',
+                              'Availability or pricing has changed. Please create a new recommendation.',
                             ),
                           if (w.status == 'Failed')
                             const Text(
-                              'We could not complete this recommendation. No booking was created.',
+                              'AI recommendations are temporarily unavailable. Please try again later.',
                             ),
                           if (w.status == 'NeedsInput')
                             const Text(
                               'Please review your requirements and submit a new recommendation request.',
                             ),
-                          if (p != null) ...[
-                            const Divider(height: 32),
-                            Text(
-                              'Studio: ${_studio ?? 'Selected studio (name unavailable)'}',
+                          if (w.status == 'Expired')
+                            const Text(
+                              'This recommendation has expired. Please create a new recommendation.',
                             ),
-                            Text('Package: ${p.packageName}'),
-                            Text(p.summary),
-                            Text('Date: ${p.date}'),
-                            Text('Time: ${p.start}–${p.end} (Sri Lanka)'),
+                          if (w.label == 'Processing') Text(w.step),
+                          if (w.status == 'AwaitingApproval' &&
+                              expiry != null) ...[
+                            const SizedBox(height: 16),
                             Text(
-                              'Authoritative price: LKR ${p.price.toStringAsFixed(2)}',
-                            ),
-                            Text(
-                              'Customization: ${p.extraHours} extra hours, ${p.additionalPhotographers} additional photographers',
-                            ),
-                            Text(
-                              'Proposal expires: ${w.expiresAt.toUtc().toIso8601String()} (UTC)',
+                              'Available for review until ${localizations.formatMediumDate(expiry)}, ${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(expiry), alwaysUse24HourFormat: false)} (Sri Lanka time)',
+                              style: theme.textTheme.bodySmall,
                             ),
                           ],
                         ],
@@ -560,6 +662,38 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
                     ),
                   ),
                 const SizedBox(height: 16),
+                if (w?.status == 'Approved')
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                    onPressed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const MyBookingsScreen(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.event_note_outlined),
+                    label: const Text('Go to My Bookings'),
+                  ),
+                if ([
+                  'Rejected',
+                  'Expired',
+                  'RevalidationRequired',
+                  'NeedsInput',
+                ].contains(w?.status))
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                    onPressed: () => Navigator.of(context)
+                        .pushReplacement<void, void>(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AiRequirementsScreen(service: widget.service),
+                          ),
+                        ),
+                    child: const Text('Create a new recommendation'),
+                  ),
                 OutlinedButton.icon(
                   onPressed: _loading ? null : _load,
                   icon: const Icon(Icons.refresh),

@@ -9,7 +9,7 @@ export default function AiWorkflowView({ workflow, studioName, busy = false, rea
     <p>Recommendation {workflow.id.slice(0, 8)}</p>
     <p>Proposal version {workflow.proposalVersion} · Expires {new Date(workflow.expiresAt).toLocaleString("en-LK", { timeZone: "Asia/Colombo" })} (Sri Lanka)</p>
     {workflow.status === "RevalidationRequired" && <p role="status">{revalidationMessage}</p>}
-    {workflow.status === "Approved" && <p role="status">Recommendation approved. A booking has not been created.</p>}
+    {workflow.status === "Approved" && <p role="status">Recommendation approved. Check My Bookings for the booking.</p>}
     {workflow.status === "Rejected" && <p role="status">This recommendation was rejected.</p>}
     {p && <>
       <dl className="ai-workflow-facts">
@@ -26,7 +26,7 @@ export default function AiWorkflowView({ workflow, studioName, busy = false, rea
       <p>Requested services: {p.requestedServices.join(", ") || "No specific services"}</p>
     </>}
     {workflow.status === "AwaitingApproval" && onApprove && <section className="ai-workflow-actions" aria-label="Review recommendation">
-      <p>Approval confirms this recommendation only. Availability and pricing are checked again when you approve.</p>
+      <p>Approval creates a booking after availability and pricing are checked again.</p>
       <button type="button" disabled={busy} onClick={onApprove}>Approve</button>
       <label>Rejection reason (up to 1,000 characters)<textarea value={reason} maxLength={1000} disabled={busy} onChange={e => onReason(e.target.value)} /></label>
       <button type="button" disabled={busy || !reason.trim() || reason.length > 1000} onClick={onReject}>Reject</button>

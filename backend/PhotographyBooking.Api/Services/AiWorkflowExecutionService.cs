@@ -19,7 +19,7 @@ public sealed class AiWorkflowExecutionService
         AiWorkflowPublicationService publication, TimeProvider clock) : this(python.RunAsync,
         (id, expected, next, code, ct) => TransitionAsync(db, clock, id, expected, next, code, ct),
         publication.PublishAsync,
-        (id, ct) => db.AiWorkflows.AsNoTracking().SingleAsync(w => w.Id == id, ct),
+        (id, ct) => db.AiWorkflows.AsNoTracking().Include(w => w.Events).SingleAsync(w => w.Id == id, ct),
         () => db.Database.CurrentTransaction is not null || System.Transactions.Transaction.Current is not null) { }
 
     internal AiWorkflowExecutionService(
@@ -57,10 +57,11 @@ public sealed class AiWorkflowExecutionService
                     if (result.Proposal is null)
                         await _transition(submitted.Id, expected,
                             result.Classification == FinalValidationClassification.RevalidationRequired
-                                ? AiWorkflowStatus.RevalidationRequired : AiWorkflowStatus.Failed, "publication_failed", ct);
+                                ? AiWorkflowStatus.RevalidationRequired : AiWorkflowStatus.Failed, "Validation:" + SafeCode(result.ErrorCode ?? "publication_failed"), ct);
                 }
                 else
-                    await _transition(submitted.Id, expected, Enum.Parse<AiWorkflowStatus>(completion.Status), completion.ErrorCode!, ct);
+                    await _transition(submitted.Id, expected, Enum.Parse<AiWorkflowStatus>(completion.Status),
+                        completion.FailureStage is null ? completion.ErrorCode! : completion.FailureStage + ":" + completion.ErrorCode, ct);
             }
             else
                 await _transition(submitted.Id, expected, AiWorkflowStatus.Failed, SafeCode(outcome.ErrorCode), ct);
@@ -81,10 +82,7 @@ public sealed class AiWorkflowExecutionService
         return await _read(submitted.Id, ct);
     }
 
-    private static string SafeCode(string? code) => code is "execution_timeout" or "execution_unavailable" or
-        "execution_unauthorized" or "invalid_execution_response" or "execution_failed" or "execution_cancelled" or
-        "execution_started" or "execution_validated" or "publication_failed" or "revalidation_required" or "needs_input"
-        ? code : "execution_failed";
+    private static string SafeCode(string? code) => AiExecutionFailure.ValidCode(code) ? code! : "execution_failed";
 
     // Status describes the outcome; CurrentStep is a durable stage constrained by the Phase 2 schema.
     internal static string ExecutionStep(AiWorkflowStatus status) => status switch
@@ -106,11 +104,15 @@ public sealed class AiWorkflowExecutionService
         // A tracked submission may predate this lock; reload the locked row before checking the precondition.
         await db.Entry(workflow).ReloadAsync(ct);
         if (workflow.Status != expected || workflow.ProposalVersion != 0 || workflow.FinalProposalJson is not null) return false;
+        var parts = code.Split(':', 2);
+        var stage = parts.Length == 2 && AiExecutionFailure.ValidStage(parts[0]) ? parts[0] : null;
+        code = SafeCode(stage is null ? code : parts[1]);
         workflow.Status = next;
-        workflow.CurrentStep = ExecutionStep(next);
+        workflow.CurrentStep = stage ?? ExecutionStep(next);
         workflow.UpdatedAt = clock.GetUtcNow().UtcDateTime;
         db.AiWorkflowEvents.Add(new AiWorkflowEvent { WorkflowId = id, EventType = "WorkflowExecutionStateChanged",
-            StepName = workflow.CurrentStep, Summary = "Internal workflow execution state updated.",
+            StepName = workflow.CurrentStep, Summary = next is AiWorkflowStatus.Failed or AiWorkflowStatus.RevalidationRequired or AiWorkflowStatus.NeedsInput
+                ? AiExecutionFailure.Message(code) : "Internal workflow execution state updated.",
             Success = next is AiWorkflowStatus.StudioMatching or AiWorkflowStatus.Validation,
             DetailsJson = CanonicalProposalService.Serialize(new { errorCode = SafeCode(code) }), CreatedAt = workflow.UpdatedAt });
         await db.SaveChangesAsync(ct);

@@ -37,7 +37,12 @@ public sealed class AiWorkflowListRequest : IValidatableObject
 
 public sealed record AiWorkflowResponse(Guid Id, string Status, string CurrentStep, int ProposalVersion,
     Guid? SelectedStudioId, Guid? SelectedPackageId, FinalRecommendationProposal? Proposal,
-    DateTime CreatedAt, DateTime UpdatedAt, DateTime ExpiresAt);
+    DateTime CreatedAt, DateTime UpdatedAt, DateTime ExpiresAt)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AiWorkflowFailure? Failure { get; init; }
+}
+public sealed record AiWorkflowFailure(string Stage, string Code, string Message);
 public sealed record AiWorkflowPage(IReadOnlyList<AiWorkflowResponse> Items, int Page, int PageSize, bool HasMore);
 public sealed record AiWorkflowDecisionResponse(Guid WorkflowId, int ProposalVersion, string? Status, string? ErrorCode);
 

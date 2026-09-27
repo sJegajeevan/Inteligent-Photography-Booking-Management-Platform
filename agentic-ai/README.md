@@ -30,14 +30,29 @@ real API keys into source or command history. Phase 4.2 does not modify `.env`.
 | ASPNET_TIMEOUT_SECONDS | Default 10, maximum 60; bounds each request and the entire package retrieval/quote phase |
 | AI_TIMEOUT_SECONDS | Deadline per Gemini attempt; default 10, maximum 60; existing local configuration may set 30 |
 | AI_MAX_ATTEMPTS | Provider attempts, default 2, maximum 3 |
+| AI_CALL_BUDGET_SECONDS | Total Gemini operation deadline including attempts and waits; default 35, maximum 60 |
 
 Every Gemini attempt creates and closes its own async client and has its own
 deadline. Transient HTTP 408/429/500/502/503/504, transport failures and timeouts
 may retry; other provider errors and validation failures do not. SDK internal
-retries are disabled. Backoff is 0.25 seconds before attempt 2 and, when configured,
-0.5 seconds before attempt 3. With a 30-second timeout and two attempts, allow
-approximately 60.25 seconds plus cancellation/cleanup scheduling overhead per
-Gemini operation. Attempts remain capped by AI_MAX_ATTEMPTS. External cancellation
+retries are disabled. Fallback exponential backoff includes 0–0.5 seconds of jitter:
+429 waits 4–4.5 seconds before attempt 2 and 8 seconds before optional attempt 3;
+503 and other transient failures wait 2–2.5 and 4–4.5 seconds respectively.
+The fallback delay is capped at 8 seconds including jitter. Structured Retry-After
+(seconds or HTTP date) and google.rpc.RetryInfo.retryDelay are honored when longer.
+A provider delay is never shortened to fit the deadline: if the wait plus at least
+one second for another attempt cannot fit, the call fails safely without retrying.
+All attempts and waits share AI_CALL_BUDGET_SECONDS, additionally capped by the
+workflow deadline. With the existing 30-second attempt setting, the default
+35-second operation budget can shorten the second attempt. The existing overall
+Python workflow deadline remains 120 seconds versus ASP.NET's 150-second default.
+Keep the ASP.NET timeout longer than the Python workflow timeout when configuring.
+
+The shared Gemini service retains a process-local cooldown after 429, including
+after exhausted retries. Later agent/workflow calls wait for it or fail safely if
+it cannot fit their budget. Successful calls add no pacing delay; this is not a
+distributed quota limiter and cannot prevent already-in-flight requests.
+Attempts remain capped by AI_MAX_ATTEMPTS. External cancellation
 propagates and does not trigger retries. Agent output validation remains outside
 the retry boundary; malformed model output is never regenerated as a fallback.
 

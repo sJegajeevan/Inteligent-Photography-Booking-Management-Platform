@@ -7,6 +7,12 @@ using PhotographyBooking.Api.DTOs.PhotographyPackages;
 using PhotographyBooking.Api.Models;
 using PhotographyBooking.Api.Services;
 
+if (args.Contains("--ai-live-checks"))
+{
+    await AiWorkflowLiveChecks.RunAsync();
+    return;
+}
+
 var count = 0;
 void Check(bool value, string name)
 {

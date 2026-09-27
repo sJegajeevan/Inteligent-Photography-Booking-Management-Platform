@@ -1,6 +1,7 @@
 """Offline ASGI boundary checks, including the existing graph and deterministic validator."""
 import asyncio
 import json
+import logging
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from uuid import uuid4
@@ -18,6 +19,57 @@ from test_validation_discovery import payload, tool
 
 TOKEN = "offline-internal-service-test-token-32-characters"
 WORKFLOW, EXECUTION = str(uuid4()), str(uuid4())
+
+
+@pytest.fixture
+def terminal_logs(caplog):
+    logger = logging.getLogger("snapsync.workflow.terminal")
+    logger.addHandler(caplog.handler)
+    try:
+        yield caplog
+    finally:
+        logger.removeHandler(caplog.handler)
+
+
+@pytest.mark.parametrize("status,stage,code,public_code", [
+    ("Failed", "StudioMatching", "no_matching_studios", "execution_failed"),
+    ("Failed", "PackageRecommendation", "invalid_gemini_output", "execution_failed"),
+    ("Failed", "Scheduling", "invalid_scheduling_input", "execution_failed"),
+    ("RevalidationRequired", "Validation", "price_changed", "revalidation_required"),
+    ("NeedsInput", "Scheduling", "no_available_slots", "needs_input"),
+])
+def test_terminal_diagnostic_is_safe_and_preserves_completion(terminal_logs, status, stage, code, public_code):
+    private = "PRIVATE customer@example.com customer requirements prompt provider response API_KEY " + TOKEN
+    graph_state = {"status": status, "blocked_stage": stage, "error_code": code,
+                   "events": [{"summary": private, "detailsJson": json.dumps({"errorCode": code, "raw": private})}],
+                   "requirements": private, "studio_matching": private, "package_recommendation": private,
+                   "raw_model_response": private}
+    app, body, _, _ = setup(result=graph_state)
+    response = send(app, body)
+    assert response.status_code == 200
+    assert response.json()["status"] == status and response.json()["errorCode"] == code
+    assert response.json()["failureStage"] == stage
+    assert response.json()["requirements"] == body["requirements"]
+    records = [r for r in terminal_logs.records if r.name == "snapsync.workflow.terminal"]
+    assert len(records) == 1
+    record = records[0]
+    assert record.getMessage() == f"Workflow terminal blocked_stage={stage} error_code={code} status={status}"
+    assert record.args == (stage, code, status)
+    assert record.levelno == logging.WARNING
+    assert record.exc_info is None and record.stack_info is None
+    assert graph_state == app.state.workflow.ainvoke.return_value
+    for sensitive in private.split():
+        assert sensitive not in terminal_logs.text
+
+
+@pytest.mark.parametrize("unsafe", ["customer_secret", "PRIVATE\nprovider response", {"secret": TOKEN}, [TOKEN], None])
+def test_terminal_diagnostic_redacts_unknown_or_malformed_labels(terminal_logs, unsafe):
+    app, body, _, _ = setup(result={"status": "NeedsInput", "blocked_stage": unsafe, "error_code": unsafe})
+    response = send(app, body)
+    assert response.json()["status"] == "NeedsInput" and response.json()["errorCode"] == "needs_input"
+    assert [r.getMessage() for r in terminal_logs.records if r.name == "snapsync.workflow.terminal"] == [
+        "Workflow terminal blocked_stage=unknown error_code=unknown status=NeedsInput"]
+    assert TOKEN not in terminal_logs.text and "PRIVATE" not in terminal_logs.text
 
 
 def setup(*, result=None, exception=None, classification="Pass", timeout=120, token=TOKEN):
@@ -61,18 +113,19 @@ def test_unconfigured_service_fails_closed():
     app.state.workflow.ainvoke.assert_not_awaited()
 
 
-def test_real_graph_pass_is_narrow_correlated_and_has_no_write_tools():
+def test_real_graph_pass_is_narrow_correlated_and_has_no_write_tools(terminal_logs):
     app, body, calls, agents = setup()
     response = send(app, body)
     assert response.status_code == 200
     result = ExecutionCompletion.model_validate_json(response.content)
     assert result.status == "AwaitingApproval" and result.evidence.classification == "Pass"
+    assert not [r for r in terminal_logs.records if r.name == "snapsync.workflow.terminal"]
     assert str(result.workflowId) == WORKFLOW and str(result.executionId) == EXECUTION
     assert result.requirements.model_dump(mode="json") == body["requirements"]
     assert len(result.schedulingEvidence.candidates) == 1
     assert result.schedulingEvidence.candidates[0].date == result.evidence.current.selection.date
     assert len(response.content) <= RESPONSE_LIMIT
-    assert set(response.json()) == {"workflowId", "executionId", "status", "requirements", "evidence", "schedulingEvidence", "errorCode"}
+    assert set(response.json()) == {"workflowId", "executionId", "status", "requirements", "evidence", "schedulingEvidence", "errorCode", "failureStage"}
     for agent, method in zip(agents, ("match", "recommend", "schedule")):
         getattr(agent, method).assert_awaited_once()
     assert len(calls) == 1 and calls[0].url.path.endswith("/validate-recommendation")
@@ -111,11 +164,15 @@ def test_bounded_body(body, status):
 
 
 @pytest.mark.parametrize("classification,status", [("Fail", "Failed"), ("RevalidationRequired", "RevalidationRequired")])
-def test_real_graph_failure_has_no_publication_evidence(classification, status):
+def test_real_graph_failure_has_no_publication_evidence(classification, status, terminal_logs):
     app, body, calls, _ = setup(classification=classification)
     result = send(app, body).json()
     assert result["status"] == status and result["evidence"] is None and result["schedulingEvidence"] is None
     assert len(calls) == 1
+    records = [r for r in terminal_logs.records if r.name == "snapsync.workflow.terminal"]
+    assert len(records) == 1
+    code = "validation_failed" if classification == "Fail" else "stale_recommendation"
+    assert records[0].getMessage() == f"Workflow terminal blocked_stage=Validation error_code={code} status={status}"
 
 
 @pytest.mark.parametrize("state", [{}, {"status": "Approved"}, {"status": "AwaitingApproval"},

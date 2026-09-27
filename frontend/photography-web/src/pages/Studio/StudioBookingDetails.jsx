@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import BookingStatusBadge from "../../components/booking/BookingStatusBadge";
 import { cancelBooking, getBooking, getBookingHistory, updateBookingStatus } from "../../services/bookingService";
 import { useAuth } from "../../context/useAuth";
+import { canCompleteBooking, completionAvailabilityMessage } from "./bookingCompletion";
 
 const dateFormatter = new Intl.DateTimeFormat("en-LK", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" });
 const dateTimeFormatter = new Intl.DateTimeFormat("en-LK", { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
@@ -32,10 +33,10 @@ function formatDate(value) { return value ? dateFormatter.format(new Date(`${Str
 function formatDateTime(value) { return value ? dateTimeFormatter.format(new Date(value)) : "Not available"; }
 function formatTime(value) { if (!/^\d{2}:\d{2}/.test(value || "")) return "Not set"; const [hours, minutes] = value.split(":").map(Number); return timeFormatter.format(new Date(Date.UTC(2000, 0, 1, hours, minutes))); }
 
-function ActionDialog({ action, isSaving, onClose, onSubmit }) {
+function ActionDialog({ action, isSaving, completionDisabled, onClose, onSubmit }) {
   const [reason, setReason] = useState("");
   const needsReason = action === "Rejected" || action === "Cancelled";
-  return <div className="booking-dialog-backdrop" role="presentation"><section className="booking-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-action-title"><p className="studio-kicker">BOOKING ACTION</p><h2 id="booking-action-title">{action === "Cancelled" ? "Cancel this booking?" : `${readableStatus(action)} this booking?`}</h2><p>This changes the booking status and records the action in its history.</p>{needsReason && <label>Reason<textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder={`Why is this booking being ${action.toLowerCase()}?`} maxLength="1000" /></label>}<div className="booking-dialog-actions"><button type="button" onClick={onClose} disabled={isSaving}>Keep booking</button><button className={action === "Cancelled" || action === "Rejected" ? "danger" : "confirm"} type="button" onClick={() => onSubmit(reason)} disabled={isSaving}>{isSaving ? "Saving…" : actionLabel(action)}</button></div></section></div>;
+  return <div className="booking-dialog-backdrop" role="presentation"><section className="booking-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-action-title"><p className="studio-kicker">BOOKING ACTION</p><h2 id="booking-action-title">{action === "Cancelled" ? "Cancel this booking?" : `${readableStatus(action)} this booking?`}</h2><p>This changes the booking status and records the action in its history.</p>{needsReason && <label>Reason<textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder={`Why is this booking being ${action.toLowerCase()}?`} maxLength="1000" /></label>}<div className="booking-dialog-actions"><button type="button" onClick={onClose} disabled={isSaving}>Keep booking</button><button className={action === "Cancelled" || action === "Rejected" ? "danger" : "confirm"} type="button" onClick={() => onSubmit(reason)} disabled={isSaving || (action === "Completed" && completionDisabled)}>{isSaving ? "Saving…" : actionLabel(action)}</button></div></section></div>;
 }
 
 export default function StudioBookingDetails({ bookingId }) {
@@ -47,6 +48,13 @@ export default function StudioBookingDetails({ bookingId }) {
   const [action, setAction] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [now, setNow] = useState(Date.now);
+
+  useEffect(() => {
+    if (booking?.status !== "Confirmed") return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [booking?.status]);
 
   const load = useCallback(async () => {
     setIsLoading(true); setError("");
@@ -64,6 +72,10 @@ export default function StudioBookingDetails({ bookingId }) {
 
   const submitAction = async (reason) => {
     if (!booking || !action) return;
+    if (action === "Completed" && !canCompleteBooking(booking)) {
+      setFeedback(completionAvailabilityMessage(booking));
+      return;
+    }
     setIsSaving(true); setFeedback("");
     try {
       const changedBy = user?.fullName || user?.email || "Authenticated user";
@@ -80,13 +92,14 @@ export default function StudioBookingDetails({ bookingId }) {
   if (error) return <section className="booking-state booking-error"><strong>Unable to load this booking.</strong><p>{error}</p><button className="dashboard-primary-button" type="button" onClick={load}>Retry</button><button className="booking-link-button" type="button" onClick={() => window.location.assign("/studio/bookings")}>Back to bookings</button></section>;
 
   const availableActions = transitions[booking.status] || [];
+  const completionDisabled = !canCompleteBooking(booking, now);
   return <>
     <section className="studio-route-heading booking-route-heading"><div><button className="booking-back-link" type="button" onClick={() => window.location.assign("/studio/bookings")}>← All bookings</button><p className="studio-kicker">BOOKING #{booking.id}</p><h1>Booking details</h1><p>Review the complete request and status activity.</p></div><BookingStatusBadge status={booking.status} /></section>
     {feedback && <p className="booking-feedback" role="status">{feedback}</p>}
-    <section className="booking-detail-grid"><article className="booking-detail-card"><h2>Booking details</h2><dl><div><dt>Customer</dt><dd>Customer #{booking.customerId}</dd></div><div><dt>Studio</dt><dd>Studio #{booking.studioId}</dd></div><div><dt>Package</dt><dd>Package #{booking.packageId}</dd></div><div><dt>Shoot date</dt><dd>{formatDate(booking.bookingDate)}</dd></div><div><dt>Time</dt><dd>{formatTime(booking.startTime)} – {formatTime(booking.endTime)}</dd></div><div><dt>Location</dt><dd>{booking.location || "Not provided"}</dd></div><div><dt>Total price</dt><dd>{Number(booking.totalPrice || 0).toLocaleString("en-LK", { style: "currency", currency: "LKR" })}</dd></div><div><dt>Created</dt><dd>{formatDateTime(booking.createdAt)}</dd></div></dl>{booking.notes && <div className="booking-notes"><h3>Notes</h3><p>{booking.notes}</p></div>}</article>
-      <aside className="booking-actions-card"><h2>Actions</h2><p>Available actions follow the current backend status rules.</p>{availableActions.length ? <div>{availableActions.map((item) => <button key={item} type="button" className={item === "Cancelled" || item === "Rejected" ? "booking-danger-action" : "booking-primary-action"} onClick={() => setAction(item)}>{item === "Confirmed" ? "Confirm booking" : item === "Completed" ? "Mark as completed" : item === "Rejected" ? "Reject booking" : "Cancel booking"}</button>)}</div> : <p className="booking-muted">No further actions are available for this status.</p>}</aside>
+    <section className="booking-detail-grid"><article className="booking-detail-card"><h2>Booking details</h2><dl><div><dt>Customer</dt><dd>{booking.customerName?.trim() || "Unknown customer"}</dd></div><div><dt>Studio</dt><dd>{booking.studioName?.trim() || "Unknown studio"}</dd></div><div><dt>Package</dt><dd>{booking.packageName?.trim() || "Unknown package"}</dd></div><div><dt>Shoot date</dt><dd>{formatDate(booking.bookingDate)}</dd></div><div><dt>Time</dt><dd>{formatTime(booking.startTime)} – {formatTime(booking.endTime)}</dd></div><div><dt>Location</dt><dd>{booking.location || "Not provided"}</dd></div><div><dt>Total price</dt><dd>{Number(booking.totalPrice || 0).toLocaleString("en-LK", { style: "currency", currency: "LKR" })}</dd></div><div><dt>Created</dt><dd>{formatDateTime(booking.createdAt)}</dd></div></dl>{booking.notes && <div className="booking-notes"><h3>Notes</h3><p>{booking.notes}</p></div>}</article>
+      <aside className="booking-actions-card"><h2>Actions</h2><p>Available actions follow the current backend status rules.</p>{availableActions.length ? <div>{availableActions.map((item) => <button key={item} type="button" className={item === "Cancelled" || item === "Rejected" ? "booking-danger-action" : "booking-primary-action"} disabled={item === "Completed" && completionDisabled} aria-describedby={item === "Completed" && completionDisabled ? "completion-availability" : undefined} onClick={() => setAction(item)}>{actionLabel(item)}</button>)}</div> : <p className="booking-muted">No further actions are available for this status.</p>}{booking.status === "Confirmed" && completionDisabled && <p id="completion-availability" className="booking-muted">{completionAvailabilityMessage(booking)}</p>}</aside>
     </section>
     <section className="booking-history-card"><div><p className="studio-kicker">STATUS HISTORY</p><h2>Timeline</h2></div>{history.length ? <ol className="booking-timeline">{history.map((item) => <li key={item.id}><span className="booking-timeline-dot" /><div><div><strong>{item.oldStatus ? `${readableStatus(item.oldStatus)} → ` : ""}{readableStatus(item.newStatus)}</strong><time>{formatDateTime(item.createdAt)}</time></div><p>Changed by {item.changedBy}{item.reason ? ` · ${item.reason}` : ""}</p></div></li>)}</ol> : <p className="booking-muted">No status changes have been recorded yet.</p>}</section>
-    {action && <ActionDialog action={action} isSaving={isSaving} onClose={() => setAction("")} onSubmit={submitAction} />}
+    {action && <ActionDialog action={action} isSaving={isSaving} completionDisabled={completionDisabled} onClose={() => setAction("")} onSubmit={submitAction} />}
   </>;
 }

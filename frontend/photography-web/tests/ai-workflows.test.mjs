@@ -85,7 +85,7 @@ for (const status of ['AwaitingApproval', 'Approved', 'Rejected', 'RevalidationR
   assert.equal(html.includes('>Reject</button>'), status === 'AwaitingApproval');
   assert.ok(!html.includes('PRIVATE'));
   if (status === 'RevalidationRequired') assert.ok(html.includes('availability or pricing has changed'));
-  if (status === 'Approved') assert.ok(html.includes('A booking has not been created'));
+  if (status === 'Approved') assert.ok(html.includes('Check My Bookings for the booking'));
 });
 test('review controls disabled while request pending', () => {
   const html = renderToStaticMarkup(createElement(View, { workflow: parseWorkflow(fixture()), busy: true,

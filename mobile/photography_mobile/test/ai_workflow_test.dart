@@ -170,7 +170,7 @@ void main() {
     expect((await service.list()).items.single.label, 'Awaiting Approval');
     expect((await service.get(id)).status, 'Approved');
   });
-  for (final status in [400, 401, 404, 409, 500]) {
+  for (final status in [400, 401, 404, 409, 429, 500, 503]) {
     test('HTTP $status error is sanitized', () async {
       final service = AiWorkflowService(
         client: MockClient(
@@ -188,6 +188,18 @@ void main() {
           ),
         ),
       );
+      if (status == 429 || status == 503) {
+        await expectLater(
+          service.submit(requirements()),
+          throwsA(
+            isA<AiWorkflowException>().having(
+              (e) => e.message,
+              'friendly provider message',
+              'AI recommendations are temporarily unavailable. Please try again later.',
+            ),
+          ),
+        );
+      }
     });
   }
   test('malformed creation result is uncertain and never retried', () async {
@@ -249,12 +261,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text(workflowLabels[status]!), findsOneWidget);
-      expect(find.text('Studio: Snap Studio'), findsOneWidget);
-      expect(find.text('Package: Portrait session'), findsOneWidget);
+      expect(find.text('Snap Studio'), findsOneWidget);
+      expect(find.text('Portrait session'), findsOneWidget);
       expect(find.textContaining('PRIVATE'), findsNothing);
       if (status == 'Approved') {
         expect(
-          find.textContaining('No booking has been created'),
+          find.text('Your booking has been created successfully.'),
           findsOneWidget,
         );
       }
@@ -314,18 +326,30 @@ void main() {
       submitCallback(); // Two queued taps before the disabled button is rebuilt.
       await tester.pump();
       expect(posts, 1);
-      expect(find.text('Submitting…'), findsOneWidget);
+      expect(find.text('Finding the best match for you...'), findsOneWidget);
       await tester.pump(const Duration(seconds: 2));
-      expect(find.text('Processing…'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byType(FilledButton),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(find.text('Finding the best match for you...'), findsOneWidget);
       response.complete(http.Response('{}', 201));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byType(FilledButton),
         250,
-        scrollable: find.descendant(
-          of: find.byType(ListView),
-          matching: find.byType(Scrollable),
-        ).first,
+        scrollable: find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
       expect(
         tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,

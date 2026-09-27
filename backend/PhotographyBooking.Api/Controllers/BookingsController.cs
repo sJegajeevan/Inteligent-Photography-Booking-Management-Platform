@@ -22,14 +22,16 @@ public class BookingsController : ControllerBase
 
     private readonly BookingSlotValidationService _slots;
     private readonly PhotographyPackageService _packages;
+    private readonly TimeProvider _clock;
 
     public BookingsController(ApplicationDbContext context, PackagePriceCalculationService priceCalculator,
-        BookingSlotValidationService slots, PhotographyPackageService packages)
+        BookingSlotValidationService slots, PhotographyPackageService packages, TimeProvider clock)
     {
         _context = context;
         _priceCalculator = priceCalculator;
         _slots = slots;
         _packages = packages;
+        _clock = clock;
     }
 
     // GET: /api/bookings
@@ -40,6 +42,9 @@ public class BookingsController : ControllerBase
         if (actor is null) return Forbid();
         var bookings = await OwnedBookings(actor)
             .AsNoTracking()
+            .Include(booking => booking.Customer)
+            .Include(booking => booking.Studio)
+            .Include(booking => booking.Package)
             .OrderByDescending(booking => booking.BookingDate)
             .ThenByDescending(booking => booking.StartTime)
             .ToListAsync();
@@ -55,6 +60,9 @@ public class BookingsController : ControllerBase
         if (actor is null) return Forbid();
         var booking = await OwnedBookings(actor)
             .AsNoTracking()
+            .Include(booking => booking.Customer)
+            .Include(booking => booking.Studio)
+            .Include(booking => booking.Package)
             .FirstOrDefaultAsync(booking => booking.Id == id);
 
         if (booking is null)
@@ -184,6 +192,10 @@ public class BookingsController : ControllerBase
                 message = $"Cannot change booking status from {booking.Status} to {request.NewStatus}."
             });
         }
+
+        if (request.NewStatus == BookingStatus.Completed &&
+            !BookingCompletionRules.HasShootEnded(booking.BookingDate, booking.EndTime, _clock.GetUtcNow()))
+            return BadRequest(new { message = "The booking cannot be completed before the scheduled shoot has ended." });
 
         if (!await ApplyStatusChange(booking, actor, request.NewStatus, request.Reason))
             return Conflict(new { message = "Booking status changed. Reload the booking and try again." });
@@ -355,6 +367,9 @@ public class BookingsController : ControllerBase
             CustomerId = booking.CustomerId,
             StudioId = booking.StudioId,
             PackageId = booking.PackageId,
+            CustomerName = booking.Customer?.FullName,
+            StudioName = booking.Studio?.StudioName,
+            PackageName = booking.Package?.Name,
             BookingDate = booking.BookingDate,
             StartTime = booking.StartTime,
             EndTime = booking.EndTime,

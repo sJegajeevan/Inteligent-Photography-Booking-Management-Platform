@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     aspnet_api_base_url: HttpUrl = HttpUrl("http://localhost:5000")
     ai_timeout_seconds: float = Field(default=10, gt=0, le=60)
     ai_max_attempts: int = Field(default=2, ge=1, le=3)
+    ai_call_budget_seconds: float = Field(default=35, gt=0, le=60)
     aspnet_timeout_seconds: float = Field(default=10, gt=0, le=60)
     internal_workflow_token: SecretStr = SecretStr("")
     workflow_timeout_seconds: float = Field(default=120, gt=0, le=180)

@@ -77,6 +77,14 @@ internal static class ProposalPublicationChecks
         Check(!workflow.FinalProposalJson!.Contains("PRIVATE"), "sanitized canonical proposal");
         var published = workflow.FinalProposalJson;
         Check((await canonical.RevalidateApprovalAsync(workflow)).Classification == FinalValidationClassification.Pass, "fresh reviewed proposal approval permitted");
+        var exactExpiry = workflow.ExpiresAt;
+        workflow.ExpiresAt = exactExpiry.AddTicks(-5);
+        Check((await canonical.RevalidateApprovalAsync(workflow)).Classification == FinalValidationClassification.Pass,
+            "PostgreSQL sub-microsecond expiry truncation does not reject fresh proposal");
+        workflow.ExpiresAt = exactExpiry.AddTicks(-10);
+        Check((await canonical.RevalidateApprovalAsync(workflow)).ErrorCode == "invalid_workflow_state",
+            "expiry difference of one microsecond is not silently accepted");
+        workflow.ExpiresAt = exactExpiry;
         var revision = await canonical.PrepareAsync(workflow, Request(workflow));
         Check(revision.Proposal?.Version == 2, "revision increments exactly one");
         Check((await canonical.PrepareAsync(workflow, Request(workflow, expected: 9))).Proposal is null, "client cannot choose next version");

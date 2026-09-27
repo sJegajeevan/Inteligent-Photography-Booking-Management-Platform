@@ -117,12 +117,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       const SizedBox(height: 14),
                       if (packageName != null && packageName.trim().isNotEmpty)
                         Text(packageName, style: theme.textTheme.titleMedium)
-                      else if (booking.packageId != null)
-                        Text('Package reference: ${booking.packageId}'),
-                      if (booking.studioId != null) ...[
-                        const SizedBox(height: 8),
-                        Text('Studio reference: ${booking.studioId}', style: theme.textTheme.bodySmall),
-                      ],
+                      else
+                        Text('Unknown package', style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      Text('Studio: ${booking.studioName?.trim().isNotEmpty == true ? booking.studioName!.trim() : 'Unknown studio'}', style: theme.textTheme.bodySmall),
                       const SizedBox(height: 16),
                       Text(MaterialLocalizations.of(context).formatFullDate(booking.date!)),
                       const SizedBox(height: 6),

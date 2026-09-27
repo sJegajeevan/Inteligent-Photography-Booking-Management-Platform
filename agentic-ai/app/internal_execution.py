@@ -2,6 +2,7 @@
 import asyncio
 import hmac
 import json
+import logging
 from typing import Literal
 from uuid import UUID
 
@@ -16,6 +17,40 @@ from app.workflow import MatchingContext
 
 REQUEST_LIMIT = 16_384
 RESPONSE_LIMIT = 65_536
+
+# Match the dedicated Gemini diagnostics logger without enabling SDK/root logs.
+_terminal_logger = logging.getLogger("snapsync.workflow.terminal")
+_terminal_logger.setLevel(logging.WARNING)
+_terminal_logger.propagate = False
+if not _terminal_logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    _terminal_logger.addHandler(_handler)
+
+_DIAGNOSTIC_STAGES = frozenset({"StudioMatching", "PackageRecommendation", "Scheduling", "Validation"})
+_DIAGNOSTIC_CODES = frozenset({
+    "matching_agent_not_configured", "invalid_matching_input", "no_matching_studios",
+    "gemini_not_configured", "gemini_timeout", "gemini_unavailable", "malformed_structured_output",
+    "backend_timeout", "backend_unavailable", "invalid_backend_response",
+    "unknown_studio_id", "duplicate_studio_id", "unsupported_recommendation_claim",
+    "package_agent_not_implemented", "invalid_package_input", "invalid_package_reference",
+    "no_packages", "package_candidate_limit_exceeded", "no_matching_packages",
+    "invalid_gemini_output", "unknown_package_reference", "duplicate_package_id",
+    "scheduling_agent_not_implemented", "invalid_scheduling_input", "package_unavailable",
+    "no_available_slots", "invalid_workflow_state", "validation_failed", "stale_recommendation",
+    "price_changed", "slot_unavailable", "booking_conflict", "budget_failure",
+})
+
+
+def _log_terminal_state(state: dict) -> None:
+    status = state.get("status")
+    if not isinstance(status, str) or status not in ("Failed", "RevalidationRequired", "NeedsInput"):
+        return
+    # These fields survive the Failed node; never inspect or log event payloads.
+    stage, code = state.get("blocked_stage"), state.get("error_code")
+    stage = stage if isinstance(stage, str) and stage in _DIAGNOSTIC_STAGES else "unknown"
+    code = code if isinstance(code, str) and code in _DIAGNOSTIC_CODES else "unknown"
+    _terminal_logger.warning("Workflow terminal blocked_stage=%s error_code=%s status=%s", stage, code, status)
 
 
 class ExecutionRequest(SchedulingContract):
@@ -37,13 +72,16 @@ class ExecutionCompletion(SchedulingContract):
     requirements: ValidationRequirements
     evidence: FinalValidationResult | None
     schedulingEvidence: SchedulingCandidateResponse | None
-    errorCode: Literal["execution_failed", "execution_timeout", "invalid_execution_response",
-                       "revalidation_required", "needs_input"] | None
+    errorCode: str | None
+    failureStage: Literal["StudioMatching", "PackageRecommendation", "Scheduling", "Validation"] | None = None
 
     @model_validator(mode="after")
     def consistent(self):
+        if self.errorCode is not None and self.errorCode not in _DIAGNOSTIC_CODES | {
+                "execution_failed", "execution_timeout", "invalid_execution_response", "revalidation_required", "needs_input"}:
+            raise ValueError("Unsafe failure code")
         if self.status == "AwaitingApproval":
-            if (self.errorCode is not None or self.evidence is None or self.schedulingEvidence is None or
+            if (self.failureStage is not None or self.errorCode is not None or self.evidence is None or self.schedulingEvidence is None or
                     self.evidence.classification != "Pass" or self.evidence.validation.findings):
                 raise ValueError("Incomplete successful completion")
         elif self.evidence is not None or self.schedulingEvidence is not None or self.errorCode is None:
@@ -55,9 +93,12 @@ def completion(workflow_id: UUID, request: ExecutionRequest, state: dict) -> Exe
     status = state["status"]
     common = dict(workflowId=workflow_id, executionId=request.executionId, requirements=request.requirements)
     if status in ("Failed", "RevalidationRequired", "NeedsInput"):
+        code, stage = state.get("error_code"), state.get("blocked_stage")
+        code = code if isinstance(code, str) and code in _DIAGNOSTIC_CODES else {
+            "Failed": "execution_failed", "RevalidationRequired": "revalidation_required", "NeedsInput": "needs_input"}[status]
+        stage = stage if isinstance(stage, str) and stage in _DIAGNOSTIC_STAGES else None
         return ExecutionCompletion(**common, status=status, evidence=None, schedulingEvidence=None,
-            errorCode={"Failed": "execution_failed", "RevalidationRequired": "revalidation_required",
-                       "NeedsInput": "needs_input"}[status])
+            errorCode=code, failureStage=stage)
     if status != "AwaitingApproval" or state.get("error_code") is not None:
         raise ValueError("Invalid terminal state")
     normalized = ValidationRequirements.model_validate_json(json.dumps(state["validation_requirements"]))
@@ -116,6 +157,7 @@ def register_execution(service, settings):
             async with asyncio.timeout(settings.workflow_timeout_seconds):
                 state = await service.state.workflow.ainvoke({}, context=MatchingContext(
                     StudioMatchingInput(requirements=data.requirements, nearby=data.nearby)))
+            _log_terminal_state(state)
             result = completion(identifier, data, state)
             encoded = result.model_dump_json().encode()
             if len(encoded) > RESPONSE_LIMIT:

@@ -48,46 +48,53 @@ class AiRequirements {
         : null;
   }
 
-  String? validate() {
+  String? validate() => fieldErrors().values.firstOrNull;
+
+  Map<String, String> fieldErrors() {
+    final errors = <String, String>{};
     if (photographyType.trim().isEmpty || photographyType.trim().length > 100) {
-      return 'Enter a photography type (up to 100 characters).';
+      errors['type'] = 'Enter a photography type (up to 100 characters).';
     }
     if (location.trim().isEmpty || location.trim().length > 500) {
-      return 'Enter a location (up to 500 characters).';
+      errors['location'] = 'Enter a location (up to 500 characters).';
     }
     final amount = double.tryParse(budget.trim());
     if (amount == null ||
         !amount.isFinite ||
-        amount < 0 ||
+        amount <= 0 ||
         amount > 9999999999999999.99) {
-      return 'Enter a valid maximum budget in LKR.';
+      errors['budget'] = 'Enter a budget greater than zero in LKR.';
     }
     final hours = double.tryParse(coverageHours.trim());
     if (hours == null || !hours.isFinite || hours < .01 || hours > 24) {
-      return 'Coverage must be between 0.01 and 24 hours.';
+      errors['hours'] = 'Enter between 0.01 and 24 coverage hours.';
     }
     final first = date(earliestDate), last = date(latestDate);
-    if (first == null ||
-        last == null ||
-        last.isBefore(first) ||
-        last.difference(first).inDays >= 31) {
-      return 'Enter an ordered date range of up to 31 days (YYYY-MM-DD).';
+    if (first == null) errors['earliest'] = 'Choose a valid earliest date.';
+    if (last == null) errors['latest'] = 'Choose a valid latest date.';
+    if (first != null && last != null) {
+      if (last.isBefore(first)) {
+        errors['latest'] = 'Latest date cannot be before earliest date.';
+      } else if (last.difference(first).inDays >= 31) {
+        errors['latest'] = 'Choose a date range of up to 31 days.';
+      }
     }
     final time = RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$');
     if ((preferredStart.isNotEmpty || preferredEnd.isNotEmpty) &&
         (!time.hasMatch(preferredStart) ||
             !time.hasMatch(preferredEnd) ||
             preferredStart.compareTo(preferredEnd) >= 0)) {
-      return 'Enter both preferred times in HH:mm format, with the end after the start.';
+      errors['start'] = 'Enter both times as HH:mm, with end after start.';
+      errors['end'] = errors['start']!;
     }
     final requested = services.trim().isEmpty
         ? <String>[]
         : services.split(',').map((s) => s.trim()).toList();
     if (requested.length > 20 ||
         requested.any((s) => s.isEmpty || s.length > 120)) {
-      return 'Enter up to 20 comma-separated services, each 1–120 characters.';
+      errors['services'] = 'Enter up to 20 services, each 1–120 characters.';
     }
-    return null;
+    return errors;
   }
 
   Map<String, dynamic> toJson() {
@@ -121,10 +128,12 @@ class AiProposal {
     required this.extraHours,
     required this.additionalPhotographers,
     required this.summary,
+    this.addonNames = const [],
   });
   final String studioId, packageName, date, start, end, summary;
   final double price;
   final int extraHours, additionalPhotographers;
+  final List<String> addonNames;
 }
 
 class AiWorkflow {
@@ -199,6 +208,14 @@ class AiWorkflow {
         extraHours: c['extraHours'],
         additionalPhotographers: c['additionalPhotographers'],
         summary: '${r['photographyType']} in ${r['location']}',
+        addonNames: price['selectedAddons'] is List
+            ? (price['selectedAddons'] as List).whereType<Map>().map((addon) {
+                final name = addon['name'];
+                return name is String && name.trim().isNotEmpty
+                    ? name.trim()
+                    : 'Add-on';
+              }).toList()
+            : const [],
       );
     }
     if ([

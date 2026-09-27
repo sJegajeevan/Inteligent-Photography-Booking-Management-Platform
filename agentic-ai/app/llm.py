@@ -4,6 +4,9 @@ import asyncio
 import logging
 import random
 import re
+import math
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
 from time import monotonic
@@ -31,7 +34,8 @@ if not _attempt_logger.handlers:
 
 
 def _log_attempt(attempt: int, maximum: int, started: float, category: str,
-                 status: int | None, retryable: bool, agent: str, model: str, delay: float) -> None:
+                 status: int | None, retryable: bool, agent: str, model: str, delay: float,
+                 will_retry: bool | None = None) -> None:
     # Never interpolate exceptions, URLs, headers, operation arguments or output.
     safe_status = status if type(status) is int and 100 <= status <= 599 else None
     safe_agent = agent if agent in {"StudioMatching", "PackageRecommendation", "Scheduling", "Health", "General"} else "unknown"
@@ -40,13 +44,41 @@ def _log_attempt(attempt: int, maximum: int, started: float, category: str,
         "Gemini attempt %d/%d category=%s status=%s elapsedMs=%d retryable=%s willRetry=%s agent=%s model=%s nextRetryDelayMs=%d",
         attempt, maximum, category, safe_status if safe_status is not None else "none",
         int((monotonic() - started) * 1000), str(retryable).lower(),
-        str(retryable and attempt < maximum).lower(), safe_agent, safe_model, round(delay * 1000),
+        str(retryable and attempt < maximum if will_retry is None else will_retry).lower(),
+        safe_agent, safe_model, round(delay * 1000),
     )
 
 
-def _retry_delay(attempt: int) -> float:
+def _retry_delay(attempt: int, status: int | None = None) -> float:
     # Zero-based attempt; small jitter prevents synchronized retries. Hard cap includes jitter.
-    return min(8.0, 2.0 * 2 ** min(attempt, 3) + random.uniform(0.0, 0.5))
+    base = 4.0 if status == 429 else 2.0
+    return min(8.0, base * 2 ** min(attempt, 3) + random.uniform(0.0, 0.5))
+
+
+def _provider_retry_delay(error: errors.APIError) -> float:
+    """Read only structured delay metadata. Never parse/log provider message text."""
+    delays = [0.0]
+    headers = getattr(getattr(error, "response", None), "headers", {}) or {}
+    value = headers.get("retry-after")
+    if isinstance(value, str):
+        try:
+            seconds = float(value) if re.fullmatch(r"\d{1,12}(?:\.\d{1,9})?", value.strip()) else (
+                parsedate_to_datetime(value) - datetime.now(timezone.utc)).total_seconds()
+            if math.isfinite(seconds) and seconds >= 0:
+                delays.append(seconds)
+        except (ValueError, TypeError, OverflowError):
+            pass
+    details = getattr(error, "details", None)
+    if isinstance(details, dict):
+        body = details.get("error", details)
+        records = body.get("details", []) if isinstance(body, dict) else []
+        for record in records if isinstance(records, list) else []:
+            if not isinstance(record, dict) or record.get("@type") != "type.googleapis.com/google.rpc.RetryInfo":
+                continue
+            value = record.get("retryDelay")
+            if isinstance(value, str) and re.fullmatch(r"\d{1,12}(?:\.\d{1,9})?s", value):
+                delays.append(float(value[:-1]))
+    return max(delays)
 
 
 class AiUnavailable(Exception):
@@ -58,13 +90,30 @@ class AiUnavailable(Exception):
 class GeminiService:
     def __init__(self, settings: Settings):
         self.settings = settings
+        self._rate_limited_until = 0.0
 
     async def _call(self, operation: Callable[..., Awaitable[T]], *, agent: str = "General") -> T:
         if not self.settings.ai_configured:
             raise AiUnavailable("not_configured")
+        budget = min(self.settings.ai_call_budget_seconds, self.settings.workflow_timeout_seconds)
+        deadline = monotonic() + budget
+        try:
+            async with asyncio.timeout(budget):
+                # Shared by the application's agents. Only rate-limit responses pace
+                # later calls; ordinary successful workflows are not slowed down.
+                while (wait := self._rate_limited_until - monotonic()) > 0:
+                    if wait + 1 >= deadline - monotonic():
+                        raise AiUnavailable("provider_unavailable")
+                    await asyncio.sleep(wait)
+                return await self._attempts(operation, agent=agent, deadline=deadline)
+        except TimeoutError:
+            raise AiUnavailable("timeout") from None
+
+    async def _attempts(self, operation: Callable[..., Awaitable[T]], *, agent: str, deadline: float) -> T:
         for attempt in range(self.settings.ai_max_attempts):
             started = monotonic()
             category, status, retryable = "other_error", None, False
+            provider_delay = 0.0
             try:
                 # Each attempt has a fresh deadline/client. Context exit closes
                 # the failed client before backoff or another attempt begins.
@@ -91,6 +140,8 @@ class GeminiService:
                 ) in {408, 429, 500, 502, 503, 504}
                 if not retryable:
                     raise AiUnavailable("provider_unavailable") from None
+                if isinstance(exc, errors.APIError):
+                    provider_delay = _provider_retry_delay(exc)
                 code = "provider_unavailable"
             except asyncio.CancelledError:
                 category = "cancelled"
@@ -100,10 +151,17 @@ class GeminiService:
                 # Validation/configuration failures must not trigger another call.
                 raise AiUnavailable("provider_unavailable") from None
             finally:
-                delay = _retry_delay(attempt) if retryable and attempt + 1 < self.settings.ai_max_attempts else 0.0
+                delay = max(_retry_delay(attempt, status), provider_delay) if retryable else 0.0
+                if status == 429:
+                    # Retain provider cooldown even after the final failed attempt.
+                    self._rate_limited_until = max(self._rate_limited_until, monotonic() + delay)
+                will_retry = retryable and attempt + 1 < self.settings.ai_max_attempts and delay + 1 < deadline - monotonic()
+                # Never shorten a provider delay to fit our interactive deadline.
+                if not will_retry:
+                    delay = 0.0
                 _log_attempt(attempt + 1, self.settings.ai_max_attempts, started,
-                             category, status, retryable, agent, self.settings.gemini_model, delay)
-            if attempt + 1 == self.settings.ai_max_attempts:
+                             category, status, retryable, agent, self.settings.gemini_model, delay, will_retry)
+            if not will_retry:
                 raise AiUnavailable(code) from None
             await asyncio.sleep(delay)
 

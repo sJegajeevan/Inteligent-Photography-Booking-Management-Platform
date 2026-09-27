@@ -6,12 +6,13 @@ using Npgsql;
 using PhotographyBooking.Api.Data;
 using PhotographyBooking.Api.DTOs.Reviews;
 using PhotographyBooking.Api.Models;
+using PhotographyBooking.Api.Services;
 
 namespace PhotographyBooking.Api.Controllers;
 
 [ApiController]
 [Authorize]
-public class ReviewsController(ApplicationDbContext context) : ControllerBase
+public class ReviewsController(ApplicationDbContext context, TimeProvider clock) : ControllerBase
 {
     [HttpPost("api/customer/reviews")]
     [Authorize(Roles = "Customer")]
@@ -30,6 +31,9 @@ public class ReviewsController(ApplicationDbContext context) : ControllerBase
         if (booking is null) return NotFound(new { message = "Booking was not found." });
         if (booking.Status != BookingStatus.Completed)
             return BadRequest(new { message = "Only completed bookings can be reviewed." });
+
+        if (!BookingCompletionRules.HasShootEnded(booking.BookingDate, booking.EndTime, clock.GetUtcNow()))
+            return BadRequest(new { message = "The booking cannot be reviewed before the scheduled shoot has ended." });
 
         if (await context.Reviews.AnyAsync(item => item.BookingId == booking.Id, cancellationToken))
             return Conflict(new { message = "This booking already has a review." });

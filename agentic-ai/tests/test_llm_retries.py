@@ -29,7 +29,7 @@ def install_provider(monkeypatch, operations):
     real_sleep = asyncio.sleep
 
     async def sleep(delay):
-        if delay in (2.25, 4.25):
+        if delay in (2.25, 4.25, 8.0):
             events.append(('backoff', delay))
             await real_sleep(0)
         else:
@@ -68,7 +68,8 @@ def test_transient_failure_then_success_uses_fresh_closed_clients(monkeypatch, f
     events, options, clients = install_provider(monkeypatch, operations)
     result = asyncio.run(GeminiService(configured(ai_timeout_seconds=30)).generate_text('test'))
     assert result == 'OK'
-    assert events == [('open', 0), ('close', 0), ('backoff', 2.25), ('open', 1), ('close', 1)]
+    delay = 4.25 if getattr(failure, 'code', None) == 429 else 2.25
+    assert events == [('open', 0), ('close', 0), ('backoff', delay), ('open', 1), ('close', 1)]
     assert all(c.closed for c in clients)
     assert all(o.timeout == 30000 and o.retry_options.attempts == 1 for o in options)
     assert [op.await_count for op in operations] == [1, 1]
@@ -93,7 +94,8 @@ def test_real_attempt_timeout_then_second_success_has_fresh_deadline(monkeypatch
 
 @pytest.mark.parametrize('attempts', [1, 2, 3])
 @pytest.mark.parametrize('failure,code', [(httpx.ConnectError('private'), 'provider_unavailable'),
-    (provider_error(503), 'provider_unavailable'), (httpx.ReadTimeout('private'), 'timeout')])
+    (provider_error(503), 'provider_unavailable'), (provider_error(429), 'provider_unavailable'),
+    (httpx.ReadTimeout('private'), 'timeout')])
 def test_exhaustion_is_bounded_and_sanitized(monkeypatch, attempts, failure, code):
     operations = [AsyncMock(side_effect=failure) for _ in range(attempts)]
     events, _, clients = install_provider(monkeypatch, operations)
@@ -104,7 +106,8 @@ def test_exhaustion_is_bounded_and_sanitized(monkeypatch, attempts, failure, cod
     assert len(clients) == attempts
     assert all(c.closed for c in clients)
     assert all(op.await_count == 1 for op in operations)
-    assert [v for event, v in events if event == 'backoff'] == [2.25, 4.25][:attempts-1]
+    expected = [4.25, 8.0] if getattr(failure, 'code', None) == 429 else [2.25, 4.25]
+    assert [v for event, v in events if event == 'backoff'] == expected[:attempts-1]
 
 
 def test_two_deadlines_each_get_full_attempt_budget(monkeypatch):
@@ -210,4 +213,4 @@ def test_provider_retry_uses_logged_backoff_budget(monkeypatch, status):
     operations = [AsyncMock(side_effect=provider_error(status)), AsyncMock(return_value=SimpleNamespace(text='OK'))]
     events, _, _ = install_provider(monkeypatch, operations)
     assert asyncio.run(GeminiService(configured()).rank_packages('test')) == 'OK'
-    assert [delay for kind, delay in events if kind == 'backoff'] == [2.25]
+    assert [delay for kind, delay in events if kind == 'backoff'] == [4.25 if status == 429 else 2.25]

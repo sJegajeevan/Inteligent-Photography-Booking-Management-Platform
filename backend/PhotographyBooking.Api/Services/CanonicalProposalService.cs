@@ -109,9 +109,9 @@ public sealed class CanonicalProposalService(FinalRecommendationValidationServic
             proposal = Read<FinalRecommendationProposal>(workflow.FinalProposalJson!);
             var now = clock.GetUtcNow();
             if (proposal.ProposalId == Guid.Empty || proposal.Version != workflow.ProposalVersion ||
-                proposal.Selection.StudioId != workflow.SelectedStudioId || proposal.Selection.PackageId != workflow.SelectedPackageId ||
-                proposal.ExpiresAtUtc.UtcDateTime != workflow.ExpiresAt || proposal.CreatedAtUtc != proposal.FinalEvidence?.CheckedAtUtc ||
-                proposal.ExpiresAtUtc != proposal.FinalEvidence.EvidenceExpiresAtUtc ||
+                proposal.Selection!.StudioId != workflow.SelectedStudioId || proposal.Selection.PackageId != workflow.SelectedPackageId ||
+                (proposal.ExpiresAtUtc.UtcDateTime - workflow.ExpiresAt).Duration() >= TimeSpan.FromMicroseconds(1) || proposal.CreatedAtUtc != proposal.FinalEvidence?.CheckedAtUtc ||
+                proposal.ExpiresAtUtc != proposal.FinalEvidence!.EvidenceExpiresAtUtc ||
                 !Same(proposal.Requirements, Read<CustomerPhotographyRequirements>(workflow.NormalizedRequirementsJson)) ||
                 !Same(proposal.Pricing, proposal.FinalEvidence.Current?.Pricing) ||
                 !Same(proposal.Validation, proposal.FinalEvidence.Validation) ||
@@ -119,7 +119,9 @@ public sealed class CanonicalProposalService(FinalRecommendationValidationServic
                 return new(FinalValidationClassification.Fail, "invalid_workflow_state", null);
         }
         catch (Exception error) when (error is JsonException or NotSupportedException or ArgumentException or NullReferenceException)
-        { return new(FinalValidationClassification.Fail, "invalid_workflow_state", null); }
+        {
+            return new(FinalValidationClassification.Fail, "invalid_workflow_state", null);
+        }
         var fresh = await CheckAsync(proposal.Requirements, proposal.Selection, proposal.FinalEvidence!, ct);
         if (fresh.Classification != FinalValidationClassification.Pass)
             return new(fresh.Classification, Reason(fresh), null);

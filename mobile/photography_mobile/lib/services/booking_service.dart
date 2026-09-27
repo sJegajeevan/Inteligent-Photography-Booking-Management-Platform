@@ -214,8 +214,11 @@ class CustomerBooking {
         startTime = json['startTime'] is String ? json['startTime'] as String : null,
         endTime = json['endTime'] is String ? json['endTime'] as String : null,
         studioId = json['studioId'] is String ? json['studioId'] as String : null,
+        studioName = json['studioName'] is String ? json['studioName'] as String : null,
         packageId = json['packageId'] is String ? json['packageId'] as String : null,
-        packageName = json['customization'] is Map && json['customization']['packageName'] is String
+        packageName = json['packageName'] is String && (json['packageName'] as String).trim().isNotEmpty
+            ? json['packageName'] as String
+            : json['customization'] is Map && json['customization']['packageName'] is String
             ? json['customization']['packageName'] as String : null {
     if (summary.id == null || summary.id! <= 0 || date == null) {
       throw const FormatException('Invalid booking reference or date');
@@ -224,7 +227,7 @@ class CustomerBooking {
 
   final CreatedBooking summary;
   final DateTime? date;
-  final String? startTime, endTime, studioId, packageId, packageName;
+  final String? startTime, endTime, studioId, studioName, packageId, packageName;
 }
 
 class CustomerBookingDetails extends CustomerBooking {

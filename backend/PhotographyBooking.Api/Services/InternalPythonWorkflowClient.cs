@@ -84,10 +84,13 @@ public sealed class InternalPythonWorkflowClient(HttpClient http, PythonWorkflow
         {
             if (source.ValueKind != JsonValueKind.Object) throw new JsonException();
             var properties = source.EnumerateObject().ToArray();
-            if (properties.Length != expected.EnumerateObject().Count() || properties.Select(p => p.Name).Distinct().Count() != properties.Length)
+            var optionalStageAbsent = expected.TryGetProperty("failureStage", out var stage) && stage.ValueKind == JsonValueKind.Null &&
+                !source.TryGetProperty("failureStage", out _);
+            if (properties.Length != expected.EnumerateObject().Count() - (optionalStageAbsent ? 1 : 0) || properties.Select(p => p.Name).Distinct().Count() != properties.Length)
                 throw new JsonException();
             foreach (var property in expected.EnumerateObject())
             {
+                if (property.Name == "failureStage" && optionalStageAbsent) continue;
                 if (!source.TryGetProperty(property.Name, out var value)) throw new JsonException();
                 if (property.Name is "isReservation" or "timeZoneId" or "currency" or "schemaVersion" && value.GetRawText() != property.Value.GetRawText())
                     throw new JsonException();
@@ -111,14 +114,15 @@ public sealed class InternalPythonWorkflowClient(HttpClient http, PythonWorkflow
         {
             if (result.Status is not ("Failed" or "RevalidationRequired" or "NeedsInput") ||
                 result.Evidence is not null || result.SchedulingEvidence is not null ||
-                result.ErrorCode is not ("execution_failed" or "execution_timeout" or "invalid_execution_response" or "revalidation_required" or "needs_input"))
+                !AiExecutionFailure.ValidCode(result.ErrorCode) ||
+                result.FailureStage is not null && !AiExecutionFailure.ValidStage(result.FailureStage))
                 throw new JsonException();
             return;
         }
         var evidence = result.Evidence;
         var selected = evidence?.Current?.Selection;
         var schedule = result.SchedulingEvidence;
-        if (selected is null || schedule is null || result.ErrorCode is not null ||
+        if (selected is null || schedule is null || result.ErrorCode is not null || result.FailureStage is not null ||
             !CanonicalProposalService.ValidEvidence(evidence, selected, DateTimeOffset.UtcNow, requireFresh: false) ||
             !evidence!.PriorTimestampAvailable || schedule.Candidates is not { Count: 1 } ||
             schedule.StudioId != selected.StudioId || schedule.PackageId != selected.PackageId || schedule.TimeZoneId != "Asia/Colombo" ||

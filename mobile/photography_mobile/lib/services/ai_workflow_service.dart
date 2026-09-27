@@ -9,6 +9,7 @@ import 'auth_service.dart';
 
 class AiWorkflowException implements Exception {
   const AiWorkflowException(this.message, {this.outcomeUnknown = false});
+
   final String message;
   final bool outcomeUnknown;
 }
@@ -17,8 +18,10 @@ class AiWorkflowService {
   AiWorkflowService({http.Client? client, AuthService? auth})
     : _client = client ?? http.Client(),
       _auth = auth ?? AuthService();
+
   final http.Client _client;
   final AuthService _auth;
+
   void close() {
     _client.close();
     _auth.close();
@@ -29,19 +32,24 @@ class AiWorkflowService {
 
   Future<dynamic> _request(String path, {Map<String, dynamic>? body}) async {
     var dispatched = false;
+
     try {
       final token = await _auth.readToken();
+
       if (token == null || token.isEmpty) {
         throw const AiWorkflowException(
           'Please sign in with your Customer account.',
         );
       }
+
       final headers = {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
         if (body != null) 'Content-Type': 'application/json',
       };
+
       dispatched = true;
+
       final response =
           await (body == null
                   ? _client.get(
@@ -54,21 +62,32 @@ class AiWorkflowService {
                       body: jsonEncode(body),
                     ))
               .timeout(Duration(seconds: body == null ? 30 : 210));
+
       if (response.statusCode == 401 || response.statusCode == 403) {
         throw const AiWorkflowException(
           'Your session has expired. Please sign in again.',
         );
       }
+
       if (response.statusCode == 404) {
         throw const AiWorkflowException(
           'This recommendation was not found or is not available to your account.',
         );
       }
+
       if (response.statusCode == 400) {
         throw const AiWorkflowException(
           'Check your requirements and try again.',
         );
       }
+
+      if (response.statusCode == 429 || response.statusCode == 503) {
+        throw AiWorkflowException(
+          'AI recommendations are temporarily unavailable. Please try again later.',
+          outcomeUnknown: body != null,
+        );
+      }
+
       if (response.statusCode != (body == null ? 200 : 201)) {
         throw AiWorkflowException(
           body == null
@@ -77,10 +96,11 @@ class AiWorkflowService {
           outcomeUnknown: body != null,
         );
       }
+
       return jsonDecode(utf8.decode(response.bodyBytes));
     } on AiWorkflowException {
       rethrow;
-    } catch (_) {
+    } catch (e) {
       throw AiWorkflowException(
         body != null && dispatched
             ? uncertain
@@ -94,13 +114,15 @@ class AiWorkflowService {
     if (requirements.validate() != null) {
       throw AiWorkflowException(requirements.validate()!);
     }
+
     final data = await _request(
       '',
       body: {'requirements': requirements.toJson()},
     );
+
     try {
       return AiWorkflow.fromJson(data);
-    } catch (_) {
+    } catch (e) {
       throw const AiWorkflowException(uncertain, outcomeUnknown: true);
     }
   }
@@ -109,14 +131,18 @@ class AiWorkflowService {
     if (!workflowIdPattern.hasMatch(id)) {
       throw const AiWorkflowException('Recommendation not found.');
     }
+
     final data = await _request('/$id');
+
     try {
       final result = AiWorkflow.fromJson(data);
+
       if (result.id.toLowerCase() != id.toLowerCase()) {
         throw const FormatException();
       }
+
       return result;
-    } catch (_) {
+    } catch (e) {
       throw const AiWorkflowException(
         'Unable to read this recommendation. Please refresh later.',
       );
@@ -127,7 +153,9 @@ class AiWorkflowService {
     if (page < 1 || page > 10000) {
       throw const AiWorkflowException('Invalid page.');
     }
+
     final data = await _request('?page=$page&pageSize=20');
+
     try {
       if (data is! Map<String, dynamic> ||
           data['items'] is! List ||
@@ -136,11 +164,12 @@ class AiWorkflowService {
           data['page'] != page) {
         throw const FormatException();
       }
+
       return AiWorkflowPage(
         (data['items'] as List).map(AiWorkflow.fromJson).toList(),
         data['hasMore'],
       );
-    } catch (_) {
+    } catch (e) {
       throw const AiWorkflowException(
         'Unable to read recommendations. Please refresh later.',
       );
@@ -148,17 +177,26 @@ class AiWorkflowService {
   }
 
   Future<String?> studioName(String id) async {
-    if (!workflowIdPattern.hasMatch(id)) return null;
+    if (!workflowIdPattern.hasMatch(id)) {
+      return null;
+    }
+
     try {
-      // Public studio metadata only; recommendation facts remain the canonical proposal.
+      // Public studio metadata only.
+      // Recommendation facts remain the canonical proposal.
       final response = await _client
           .get(
             ApiConfig.endpoint('api/public/studios/$id'),
             headers: {'Accept': 'application/json'},
           )
           .timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) return null;
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
       final data = jsonDecode(utf8.decode(response.bodyBytes));
+
       return data is Map<String, dynamic> && data['studioName'] is String
           ? data['studioName'] as String
           : null;

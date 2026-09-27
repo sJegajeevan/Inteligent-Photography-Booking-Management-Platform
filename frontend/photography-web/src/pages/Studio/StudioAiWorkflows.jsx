@@ -30,7 +30,7 @@ export default function StudioAiWorkflows({ workflowId, studioName }) {
     const abort = new AbortController(); controller.current = abort;
     try {
       const result = await reviewWorkflow(token, state.workflow, decision, reason, abort.signal);
-      if (!abort.signal.aborted) setMessage(result === "RevalidationRequired" ? revalidationMessage : result === "Approved" ? "Recommendation approved. No booking was created." : "Recommendation rejected.");
+      if (!abort.signal.aborted) setMessage(result === "RevalidationRequired" ? revalidationMessage : result === "Approved" ? "Recommendation approved and booking created." : "Recommendation rejected.");
       const updated = await getWorkflow(token, workflowId, abort.signal);
       if (!abort.signal.aborted) { setState(s => ({ ...s, workflow: updated, error: "" })); setReason(""); }
     } catch (error) {
@@ -39,7 +39,7 @@ export default function StudioAiWorkflows({ workflowId, studioName }) {
     } finally { pending.current = false; if (!abort.signal.aborted) setBusy(false); }
   };
   return <div className="ai-workflows">
-    <section className="studio-route-heading"><p className="studio-kicker">AI RECOMMENDATIONS</p><h1>{workflowId ? "Review recommendation" : "Recommendation review queue"}</h1><p>Review the customer's proposed session. Approval does not create a booking.</p></section>
+    <section className="studio-route-heading"><p className="studio-kicker">AI RECOMMENDATIONS</p><h1>{workflowId ? "Review recommendation" : "Recommendation review queue"}</h1><p>Review the customer's recommended session. Approval will revalidate the proposal and create a pending booking.</p></section>
     <div className="ai-workflow-toolbar">
       {workflowId ? <a href="/studio/ai-workflows">Back to review queue</a> : <label>Status <select value={status} disabled={busy || state.loading} onChange={e => { setStatus(e.target.value); setPage(1); setState(s => ({ ...s, loading: true })); }}>
         <option value="AwaitingApproval">Awaiting Approval</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option><option value="RevalidationRequired">Revalidation Required</option><option value="">All statuses</option>
