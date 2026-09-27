@@ -231,12 +231,12 @@ class CustomerBooking {
 }
 
 class CustomerBookingDetails extends CustomerBooking {
-  CustomerBookingDetails.fromJson(Map<String, dynamic> json)
+  CustomerBookingDetails.fromJson(super.json)
       : location = json['location'] is String ? json['location'] as String : null,
         notes = json['notes'] is String ? json['notes'] as String : null,
         customization = json['customization'] is Map<String, dynamic>
             ? PackagePriceSummary.fromJson(json['customization'] as Map<String, dynamic>) : null,
-        super.fromJson(json);
+        super.fromJson();
 
   final String? location, notes;
   final PackagePriceSummary? customization;

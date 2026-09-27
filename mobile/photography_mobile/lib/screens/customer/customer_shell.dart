@@ -246,7 +246,7 @@ class _PreferenceChip extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(17), border: Border.all(color: selected ? const Color(0xFF9B63F1) : const Color(0xFFD9D9E8), width: selected ? 2 : 1), boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 8, offset: Offset(0, 3))]),
       child: Stack(children: [
-        Positioned.fill(child: Image.network(_images[index], fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: const Color(0xFFE7E5F2)))),
+        Positioned.fill(child: Image.network(_images[index], fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: const Color(0xFFE7E5F2)))),
         Positioned.fill(child: ColoredBox(color: Colors.white.withValues(alpha: .78))),
         Center(child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(_icons[index], size: 21, color: const Color(0xFF3F3A49)), const SizedBox(width: 8), Text(type, style: TextStyle(color: const Color(0xFF25253E), fontSize: 16, fontWeight: selected ? FontWeight.w700 : FontWeight.w500))])),
         if (selected) const Positioned(right: 8, top: 8, child: Icon(Icons.check_circle, color: Color(0xFF5D2BC1), size: 23)),
@@ -263,24 +263,9 @@ class _HeroImage extends StatelessWidget {
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(28),
     child: Stack(children: [
-      Positioned.fill(child: Image.network('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200', fit: BoxFit.cover, errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF5E617C)))),
+      Positioned.fill(child: Image.network('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200', fit: BoxFit.cover, errorBuilder: (_, _, _) => const ColoredBox(color: Color(0xFF5E617C)))),
       Positioned.fill(child: ColoredBox(color: Colors.black.withValues(alpha: .3))),
     ]),
-  );
-}
-
-class _CameraAccent extends StatelessWidget {
-  const _CameraAccent();
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 155,
-    height: 125,
-    decoration: BoxDecoration(
-      color: const Color(0xFF35264A).withValues(alpha: .9),
-      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(80), topLeft: Radius.circular(80), bottomRight: Radius.circular(18)),
-    ),
-    child: const Center(child: Icon(Icons.camera_alt_outlined, size: 72, color: Color(0xFFB98DEB))),
   );
 }
 

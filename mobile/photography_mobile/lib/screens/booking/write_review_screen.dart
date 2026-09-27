@@ -26,10 +26,12 @@ class _WriteReviewScreenState extends State<WriteReviewScreen> {
       await _service.submit(bookingId: widget.bookingId, rating: _rating, comment: _comment.text);
       if (mounted) setState(() => _saved = true);
     } on ReviewApiException catch (error) {
-      if (mounted) setState(() {
-        _error = error.message;
-        _duplicate = error.statusCode == 409;
-      });
+      if (mounted) {
+        setState(() {
+          _error = error.message;
+          _duplicate = error.statusCode == 409;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _error = 'Unable to submit your review. Check your connection and sign-in session.');
     } finally {

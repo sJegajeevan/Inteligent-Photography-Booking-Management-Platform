@@ -78,15 +78,19 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
         location: _location.text, notes: _notes.text);
       if (mounted) setState(() => _created = booking);
     } on BookingApiException catch (error) {
-      if (mounted) setState(() {
-        _error = error.message;
-        _outcomeUnknown = error.outcomeUnknown;
-      });
+      if (mounted) {
+        setState(() {
+          _error = error.message;
+          _outcomeUnknown = error.outcomeUnknown;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() {
-        _error = 'Booking creation could not be verified. Open My Bookings before submitting again.';
-        _outcomeUnknown = true;
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Booking creation could not be verified. Open My Bookings before submitting again.';
+          _outcomeUnknown = true;
+        });
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

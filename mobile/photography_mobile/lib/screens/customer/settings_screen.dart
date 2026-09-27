@@ -71,10 +71,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 16),
                 FutureBuilder<PackageInfo>(future: _info, builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) return const LinearProgressIndicator();
-                  if (snapshot.hasError || snapshot.data == null) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('App version is unavailable.'),
-                    TextButton(onPressed: () => setState(() => _info = PackageInfo.fromPlatform()), child: const Text('Retry')),
-                  ]);
+                  if (snapshot.hasError || snapshot.data == null) {
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('App version is unavailable.'),
+                      TextButton(onPressed: () => setState(() => _info = PackageInfo.fromPlatform()), child: const Text('Retry')),
+                    ]);
+                  }
                   final info = snapshot.data!;
                   return Text('Version ${info.version}${info.buildNumber.isEmpty ? '' : ' · Build ${info.buildNumber}'}', style: theme.textTheme.bodyMedium);
                 }),

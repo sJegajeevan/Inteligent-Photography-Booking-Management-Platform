@@ -60,10 +60,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ));
       }
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(error.toString()),
-        action: SnackBarAction(label: 'Retry', onPressed: () => _open(notification)),
-      ));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(error.toString()),
+          action: SnackBarAction(label: 'Retry', onPressed: () => _open(notification)),
+        ));
+      }
     } finally {
       if (mounted) setState(() => _openingId = null);
     }
