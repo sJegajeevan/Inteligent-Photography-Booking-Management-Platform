@@ -1,7 +1,6 @@
-import { createContext, useState } from "react";
+import { useState } from "react";
+import { AuthContext } from "./authContextValue";
 import { login as loginRequest, logout as logoutRequest, register as registerRequest } from "../services/authService";
-
-export const AuthContext = createContext(null);
 
 function isUsableJwt(token) {
   if (typeof token !== "string") return false;

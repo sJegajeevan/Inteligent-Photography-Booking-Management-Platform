@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import {
   getAdminBooking, getAdminBookings, getAdminCustomer, getAdminCustomers,
@@ -49,8 +49,23 @@ function DashboardHome() {
 }
 function CollectionPage({ kind }) {
   const { token } = useAuth();
-  const [items, setItems] = useState([]); const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [rating, setRating] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(true);
-  useEffect(() => { setLoading(true); setError(""); const load = kind === "studios" ? getAdminStudios(token, search) : kind === "customers" ? getAdminCustomers(token, search) : kind === "bookings" ? getAdminBookings(token, { search, status }) : getAdminReviews(token, { search, rating }); load.then(setItems).catch((item) => setError(item.message)).finally(() => setLoading(false)); }, [token, kind, search, status, rating]);
+  const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [rating, setRating] = useState("");
+  const request = useMemo(() => ({ token, kind, search, status, rating }), [token, kind, search, status, rating]);
+  const [result, setResult] = useState({ request: null, items: [], error: "" });
+  const loading = result.request !== request;
+  const { items } = result;
+  const error = loading ? "" : result.error;
+  useEffect(() => {
+    let active = true;
+    const { token, kind, search, status, rating } = request;
+    const load = kind === "studios" ? getAdminStudios(token, search) : kind === "customers" ? getAdminCustomers(token, search) : kind === "bookings" ? getAdminBookings(token, { search, status }) : getAdminReviews(token, { search, rating });
+    load.then((items) => {
+      if (active) setResult({ request, items, error: "" });
+    }).catch((item) => {
+      if (active) setResult((previous) => ({ request, items: previous.items, error: item.message }));
+    });
+    return () => { active = false; };
+  }, [request]);
   const table = kind === "studios" ? <StudioTable items={items} /> : kind === "customers" ? <CustomerTable items={items} /> : kind === "bookings" ? <BookingTable items={items} /> : <ReviewTable items={items} />;
   return <AdminLayout page={kind}><div className="admin-toolbar"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${kind}`} aria-label={`Search ${kind}`} />{kind === "bookings" && <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Filter booking status"><option value="">All statuses</option>{statuses.map((item) => <option key={item} value={item}>{label(item)}</option>)}</select>}{kind === "reviews" && <select value={rating} onChange={(event) => setRating(event.target.value)} aria-label="Filter rating"><option value="">All ratings</option>{[5, 4, 3, 2, 1].map((item) => <option key={item} value={item}>{item} stars</option>)}</select>}</div><State loading={loading} error={error}><Panel heading={`${items.length} ${kind}`}>{table}</Panel></State></AdminLayout>;
 }

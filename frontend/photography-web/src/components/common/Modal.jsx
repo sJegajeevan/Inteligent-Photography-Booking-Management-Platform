@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 
 // Main Modal Component
@@ -355,17 +355,6 @@ export const FormModal = ({
       </form>
     </Modal>
   );
-};
-
-// useModal Hook
-export const useModal = (initialState = false) => {
-  const [isOpen, setIsOpen] = useState(initialState);
-
-  const open = useCallback(() => setIsOpen(true), []);
-  const close = useCallback(() => setIsOpen(false), []);
-  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
-
-  return { isOpen, open, close, toggle };
 };
 
 export default Modal;

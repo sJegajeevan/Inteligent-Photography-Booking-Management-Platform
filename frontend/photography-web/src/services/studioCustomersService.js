@@ -10,7 +10,7 @@ async function requestCustomers(token, path, signal) {
     });
   } catch (error) {
     if (error.name === "AbortError") throw error;
-    throw new Error("Unable to connect to the customer server. Please try again.");
+    throw new Error("Unable to connect to the customer server. Please try again.", { cause: error });
   }
   const data = await response.json().catch(() => null);
   if (!response.ok) {
