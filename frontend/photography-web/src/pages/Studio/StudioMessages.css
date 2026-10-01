@@ -1,0 +1,23 @@
+.studio-messages { display: grid; grid-template-columns: minmax(230px, 32%) minmax(0, 1fr); gap: 20px; color: #eeeaf8; }
+.studio-messages > aside, .booking-conversation { background: #171521; border: 1px solid #363044; border-radius: 18px; padding: 20px; min-width: 0; }
+.studio-messages header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.studio-messages h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.studio-messages p, .studio-messages small { color: #c3bbd3; }
+.studio-messages button { cursor: pointer; color: inherit; background: #2b253a; border: 1px solid #514363; border-radius: 9px; padding: 9px 12px; }
+.studio-messages button:disabled { opacity: .5; cursor: default; }
+.studio-messages button:focus-visible, .studio-messages textarea:focus-visible { outline: 2px solid #c3a2ff; outline-offset: 3px; }
+.booking-conversation-choice { display: flex; flex-direction: column; gap: 8px; text-align: left; width: 100%; margin-top: 12px; }
+.studio-messages .booking-conversation-choice.selected { background: #44305e; border-color: #b594e6; }
+.booking-conversation-choice span { font-size: .85rem; }
+.message-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.studio-messages > aside { max-height: 76vh; overflow-y: auto; }
+.booking-message-list { height: 45vh; min-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 16px 0; }
+.booking-message { align-self: flex-start; max-width: 85%; background: #282332; border-radius: 14px; padding: 12px 16px; overflow-wrap: anywhere; }
+.booking-message.own { align-self: flex-end; background: #44305e; }
+.booking-message strong, .booking-message time { font-size: .75rem; color: #d3c6e8; }
+.booking-message p { white-space: pre-wrap; color: #fff; margin: 8px 0; }
+.booking-message-compose { display: grid; gap: 10px; border-top: 1px solid #363044; padding-top: 16px; }
+.booking-message-compose textarea { width: 100%; box-sizing: border-box; resize: vertical; background: #211b2e; color: #fff; border: 1px solid #514363; border-radius: 10px; padding: 12px; font: inherit; }
+.booking-message-compose > div { display: flex; justify-content: space-between; align-items: center; }
+.message-error { padding: 12px; color: #ffc2c9; }
+@media (max-width: 760px) { .studio-messages { grid-template-columns: 1fr; } .studio-messages > aside { max-height: 280px; } }

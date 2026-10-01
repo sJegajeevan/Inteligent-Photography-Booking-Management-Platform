@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/photography_package.dart';
 import '../../services/booking_service.dart';
+import '../../services/booking_whatsapp.dart';
 import 'write_review_screen.dart';
+import 'booking_conversation_screen.dart';
 
 class BookingDetailsScreen extends StatefulWidget {
   const BookingDetailsScreen({super.key, required this.bookingId});
@@ -16,6 +19,31 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   final _service = BookingService();
   late Future<CustomerBookingDetails> _booking;
   bool _reviewRecorded = false;
+  bool _openingWhatsApp = false;
+
+  Future<void> _openWhatsApp(CustomerBookingDetails booking) async {
+    if (_openingWhatsApp) return;
+    final url = bookingWhatsAppUrl(booking);
+    void showMessage(String message) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    }
+    if (url == null) {
+      showMessage('WhatsApp contact is not available for this studio.');
+      return;
+    }
+    setState(() => _openingWhatsApp = true);
+    try {
+      // HTTPS lets the operating system use WhatsApp or the browser.
+      // Avoid canLaunchUrl: installed-app detection must not block browser use.
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        showMessage('Unable to open WhatsApp. Please use Message in SnapSync.');
+      }
+    } catch (_) {
+      showMessage('Unable to open WhatsApp. Please use Message in SnapSync.');
+    } finally {
+      if (mounted) setState(() => _openingWhatsApp = false);
+    }
+  }
 
   Future<void> _writeReview() async {
     final recorded = await Navigator.of(context).push<bool>(MaterialPageRoute(
@@ -98,6 +126,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               final summary = booking.summary;
               final customization = booking.customization;
               return ListView(padding: const EdgeInsets.all(20), children: [
+                card('Contact Studio', [
+                  FilledButton.icon(
+                    onPressed: _openingWhatsApp ? null : () => _openWhatsApp(booking),
+                    icon: const Icon(Icons.chat_outlined),
+                    label: Text(_openingWhatsApp ? 'Opening…' : 'Chat on WhatsApp')),
+                  const SizedBox(height: 4),
+                  Text('Talk directly with the studio', style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => BookingConversationScreen(bookingId: widget.bookingId, studioName: booking.studioName))),
+                    icon: const Icon(Icons.chat_bubble_outline), label: const Text('Message in SnapSync')),
+                  const SizedBox(height: 4),
+                  Text('Keep the conversation inside your booking', style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
+                ]),
                 Text('Booking #${summary.id}', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 if (summary.status != null) Align(alignment: Alignment.centerLeft,

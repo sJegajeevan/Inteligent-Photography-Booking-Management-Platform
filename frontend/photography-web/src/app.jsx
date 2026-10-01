@@ -41,6 +41,7 @@ function AppContent() {
     return null;
   }
   const studioPages = {
+    "/studio/messages": "messages",
     "/studio/dashboard": "dashboard",
     "/studio/profile": "profile",
     "/studio/availability": "availability",

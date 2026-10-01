@@ -66,6 +66,23 @@ export async function getBookings(token) {
   return Array.isArray(bookings) ? bookings.map(normalizeBooking) : [];
 }
 
+export function getBookingConversations(token) {
+  return request(token, "/conversations");
+}
+
+export function getBookingMessages(token, bookingId) {
+  return request(token, `/${bookingId}/messages`);
+}
+
+export async function sendBookingMessage(token, bookingId, message) {
+  if (typeof message !== "string" || !message.trim() || message.length > 1000) {
+    throw new Error("Message must contain between 1 and 1000 characters.");
+  }
+  return request(token, `/${bookingId}/messages`, {
+    method: "POST", body: JSON.stringify({ message: message.trim() }),
+  });
+}
+
 export async function getBooking(token, id) {
   return normalizeBooking(await request(token, `/${id}`));
 }

@@ -11,6 +11,7 @@ public class BookingResponse
     public Guid PackageId { get; set; }
     public string? CustomerName { get; set; }
     public string? StudioName { get; set; }
+    public string? StudioContactNumber { get; set; }
     public string? PackageName { get; set; }
     public DateOnly BookingDate { get; set; }
     public TimeOnly StartTime { get; set; }

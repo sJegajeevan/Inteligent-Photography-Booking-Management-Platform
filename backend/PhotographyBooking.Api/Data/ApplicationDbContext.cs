@@ -30,6 +30,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<BookingStatusHistory> BookingStatusHistories => Set<BookingStatusHistory>();
     public DbSet<BookingLocation> BookingLocations => Set<BookingLocation>();
+    public DbSet<BookingMessage> BookingMessages => Set<BookingMessage>();
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
@@ -113,6 +114,30 @@ public class ApplicationDbContext : DbContext
                 .WithOne(location => location.Booking)
                 .HasForeignKey<BookingLocation>(location => location.BookingId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Customer <-> Studio Owner booking conversation.
+        modelBuilder.Entity<BookingMessage>(entity =>
+        {
+            entity.Property(message => message.Message)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            entity.HasIndex(message => new
+            {
+                message.BookingId,
+                message.SentAt
+            });
+
+            entity.HasOne(message => message.Booking)
+                .WithMany()
+                .HasForeignKey(message => message.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(message => message.SenderUser)
+                .WithMany()
+                .HasForeignKey(message => message.SenderUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<BookingStatusHistory>(entity =>

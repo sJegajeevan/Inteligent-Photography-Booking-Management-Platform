@@ -5,6 +5,7 @@ import StudioServices from "./StudioServices";
 import StudioAvailability from "./StudioAvailability";
 import StudioPackages from "./StudioPackages";
 import StudioBookings from "./StudioBookings";
+import StudioMessages from "./StudioMessages";
 import StudioBookingDetails from "./StudioBookingDetails";
 import StudioSchedule from "./StudioSchedule";
 import StudioReviews from "./StudioReviews";
@@ -136,6 +137,7 @@ function StudioDashboard({ page = "dashboard", bookingId, customerId, reviewId, 
   const heading = pageDetails[page];
 
   return <StudioLayout page={page} profile={profile} profileLoading={isProfileLoading}>
+      {page === "messages" && <StudioMessages key={token} token={token} />}
       {(page === "aiWorkflows" || page === "aiWorkflowDetails") && <StudioAiWorkflows key={`${token}-${workflowId || "queue"}`} workflowId={workflowId} studioName={profile?.studioName} />}
       {page === "customers" && <StudioCustomers key={token} />}
       {page === "customerDetails" && <StudioCustomerDetails key={`${token}-${customerId}`} customerId={customerId} />}

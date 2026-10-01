@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/useAuth";
 
 const navigation = [
+  ["/studio/messages", "Messages", "messages"],
   ["/studio/dashboard", "Dashboard", "dashboard"],
   ["/studio/profile", "Profile", "profile"],
   ["/studio/availability", "Availability", "calendar"],
@@ -16,6 +17,7 @@ const navigation = [
 ];
 
 const titles = {
+  messages: "Messages",
   customers: "Customers",
   customerDetails: "Customer Details",
   dashboard: "Dashboard",
@@ -35,6 +37,7 @@ const titles = {
 
 export function StudioIcon({ name }) {
   const paths = {
+    messages: <path d="M4 4h16v13H9l-5 4V4Z" />,
     customers: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2"/></>,
     reviews: <path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z" />,
     dashboard: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,

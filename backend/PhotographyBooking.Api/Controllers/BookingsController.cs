@@ -15,7 +15,7 @@ namespace PhotographyBooking.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Customer,Studio")]
-public class BookingsController : ControllerBase
+public partial class BookingsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly PackagePriceCalculationService _priceCalculator;
@@ -369,6 +369,7 @@ public class BookingsController : ControllerBase
             PackageId = booking.PackageId,
             CustomerName = booking.Customer?.FullName,
             StudioName = booking.Studio?.StudioName,
+            StudioContactNumber = booking.Studio?.ContactNumber,
             PackageName = booking.Package?.Name,
             BookingDate = booking.BookingDate,
             StartTime = booking.StartTime,

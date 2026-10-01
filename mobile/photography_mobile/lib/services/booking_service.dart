@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/photography_package.dart';
+import '../models/booking_message.dart';
 import '../models/studio_availability.dart';
 import 'api_config.dart';
 import 'auth_service.dart';
@@ -55,6 +56,60 @@ class CreatedBooking {
 class BookingService {
   final _client = http.Client();
   final _auth = AuthService();
+
+  Future<dynamic> _messagesRequest(int bookingId, {String? message}) async {
+    final sending = message != null;
+    try {
+      final token = await _auth.readToken();
+      if (token == null || token.isEmpty) {
+        throw const BookingApiException('Please sign in to view this conversation.', statusCode: 401);
+      }
+      final uri = ApiConfig.endpoint('api/bookings/$bookingId/messages');
+      final headers = {'Accept': 'application/json', 'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json'};
+      final response = await (sending
+          ? _client.post(uri, headers: headers, body: jsonEncode({'message': message}))
+          : _client.get(uri, headers: headers)).timeout(const Duration(seconds: 30));
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw BookingApiException('Please sign in with the Customer account that owns this booking.', statusCode: response.statusCode);
+      }
+      if (response.statusCode == 404) {
+        throw const BookingApiException('This conversation is not available to your account.', statusCode: 404);
+      }
+      if (response.statusCode != (sending ? 201 : 200)) {
+        throw BookingApiException('Unable to ${sending ? 'send message' : 'load conversation'}. Please try again.',
+          outcomeUnknown: sending && response.statusCode >= 500, statusCode: response.statusCode);
+      }
+      return jsonDecode(utf8.decode(response.bodyBytes));
+    } on TimeoutException {
+      throw BookingApiException('Connection timed out. Refresh the conversation before trying again.', outcomeUnknown: sending);
+    } on http.ClientException {
+      throw BookingApiException('Cannot connect. Refresh the conversation before trying again.', outcomeUnknown: sending);
+    } on FormatException {
+      throw BookingApiException('Invalid server response. Refresh the conversation before trying again.', outcomeUnknown: sending);
+    }
+  }
+
+  Future<List<BookingMessage>> getMessages(int bookingId) async {
+    final data = await _messagesRequest(bookingId);
+    try {
+      return (data as List).map((item) => BookingMessage.fromJson(item as Map<String, dynamic>)).toList();
+    } catch (_) {
+      throw const BookingApiException('Invalid conversation data. Please refresh.');
+    }
+  }
+
+  Future<BookingMessage> sendMessage(int bookingId, String message) async {
+    if (message.trim().isEmpty || message.length > 1000) {
+      throw const BookingApiException('Message must contain between 1 and 1000 characters.');
+    }
+    final data = await _messagesRequest(bookingId, message: message.trim());
+    try {
+      return BookingMessage.fromJson(data as Map<String, dynamic>);
+    } catch (_) {
+      throw const BookingApiException('Delivery is uncertain. Refresh the conversation before trying again.', outcomeUnknown: true);
+    }
+  }
 
   void close() {
     _client.close();
@@ -215,6 +270,7 @@ class CustomerBooking {
         endTime = json['endTime'] is String ? json['endTime'] as String : null,
         studioId = json['studioId'] is String ? json['studioId'] as String : null,
         studioName = json['studioName'] is String ? json['studioName'] as String : null,
+        studioContactNumber = json['studioContactNumber'] is String ? json['studioContactNumber'] as String : null,
         packageId = json['packageId'] is String ? json['packageId'] as String : null,
         packageName = json['packageName'] is String && (json['packageName'] as String).trim().isNotEmpty
             ? json['packageName'] as String
@@ -228,6 +284,7 @@ class CustomerBooking {
   final CreatedBooking summary;
   final DateTime? date;
   final String? startTime, endTime, studioId, studioName, packageId, packageName;
+  final String? studioContactNumber;
 }
 
 class CustomerBookingDetails extends CustomerBooking {
