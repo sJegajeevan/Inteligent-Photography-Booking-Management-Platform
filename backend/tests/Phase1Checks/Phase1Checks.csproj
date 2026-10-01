@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Fixtures/python-completion.json" />
+    <EmbeddedResource Include="Fixtures/python-studio-stage.json" />
     <EmbeddedResource Include="../../database/ai-workflow/20260921000200_ai_workflow.sql" LogicalName="Phase2Schema.sql" />
     <ProjectReference Include="../../PhotographyBooking.Api/PhotographyBooking.Api.csproj" />
   </ItemGroup>

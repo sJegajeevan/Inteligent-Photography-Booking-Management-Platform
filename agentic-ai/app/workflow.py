@@ -83,7 +83,8 @@ def _awaiting_approval(state: WorkflowState) -> WorkflowState:
 def build_workflow(agent: StudioMatchingAgent | None = None,
                    package_agent: PackageRecommendationAgent | None = None,
                    scheduling_agent: SchedulingAgent | None = None,
-                   validation_agent: ValidationAgent | None = None):
+                   validation_agent: ValidationAgent | None = None,
+                   stage: str | None = None):
     async def matching(state: WorkflowState, runtime: Runtime[MatchingContext]):
         started = monotonic()
         output, code = None, None
@@ -102,7 +103,7 @@ def build_workflow(agent: StudioMatchingAgent | None = None,
             code = {"not_configured": "gemini_not_configured", "timeout": "gemini_timeout",
                     "malformed_structured_output": "malformed_structured_output"}.get(
                         exc.code, "gemini_unavailable")
-        except (DiscoveryFailure, MatchingFailure) as exc:
+        except (DiscoveryFailure, MatchingFailure, PackageDiscoveryFailure) as exc:
             code = exc.code
         # Operational event shape matches Phase 2; ASP.NET assigns workflow ID
         # and timestamps if/when a persistence adapter is added. No raw content.
@@ -224,6 +225,15 @@ def build_workflow(agent: StudioMatchingAgent | None = None,
                 "validation_requirements": normalized, "events": [*state.get("events", []), event]}
 
     graph = StateGraph(WorkflowState, context_schema=MatchingContext)
+    if stage is not None:
+        nodes = {"StudioMatching": matching, "PackageRecommendation": recommending,
+                 "Scheduling": scheduling, "Validation": validating}
+        if stage not in nodes:
+            raise ValueError("Invalid journey stage")
+        graph.add_node(stage, nodes[stage])
+        graph.add_edge(START, stage)
+        graph.add_edge(stage, END)
+        return graph.compile()
     graph.add_node("Submitted", _submitted)
     graph.add_node("StudioMatching", matching)
     # Explicit omission supports isolated earlier-phase callers/tests. Production

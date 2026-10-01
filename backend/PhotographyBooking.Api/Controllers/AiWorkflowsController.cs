@@ -12,7 +12,7 @@ namespace PhotographyBooking.Api.Controllers;
 [ApiController, Authorize, SanitizedWorkflowRequest]
 [Route("api/ai-workflows")]
 [RequestSizeLimit(16384)]
-public sealed class AiWorkflowsController(AiWorkflowService workflows) : ControllerBase
+public sealed class AiWorkflowsController(AiWorkflowService workflows, IAiJourneyService journeys) : ControllerBase
 {
     [HttpPost]
     public Task<IActionResult> Create(
@@ -20,7 +20,7 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows) : Control
         CancellationToken ct) =>
         Guard(async () =>
         {
-            var result = await workflows.CreateAsync(request, User, ct);
+            var result = await journeys.CreateAsync(request, User, ct);
 
             return CreatedAtAction(
                 nameof(Get),
@@ -35,13 +35,17 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows) : Control
         CancellationToken ct) =>
         Guard(async () =>
             Ok(
-                await workflows.GetAsync(
+                await (User.IsInRole("Customer") ? journeys.GetAsync(
                     workflowId,
                     User,
                     ct
-                )
+                ) : workflows.GetAsync(workflowId, User, ct))
             )
         );
+
+    [HttpPost("{workflowId}/journey/{journeyAction}")]
+    public Task<IActionResult> Journey([FromRoute] Guid workflowId, [FromRoute] string journeyAction, [FromBody] JourneyAction request, CancellationToken ct) =>
+        Guard(async () => Ok(await journeys.ActAsync(workflowId, journeyAction, request, User, ct)));
 
     [HttpGet]
     public Task<IActionResult> List(
@@ -205,6 +209,8 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows) : Control
         {
             return error.Code switch
             {
+                "concurrency_conflict" or "stage_running" or "stale_option" or "validation_required" or
+                    "expired_proposal" or "price_changed" or "slot_unavailable" or "booking_conflict" or "stale_recommendation" => Error(409, error.Code),
                 "unauthenticated" =>
                     Error(
                         401,

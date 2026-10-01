@@ -129,11 +129,13 @@ class AiProposal {
     required this.additionalPhotographers,
     required this.summary,
     this.addonNames = const [],
+    this.validationOutcome,
   });
   final String studioId, packageName, date, start, end, summary;
   final double price;
   final int extraHours, additionalPhotographers;
   final List<String> addonNames;
+  final String? validationOutcome;
 }
 
 class AiWorkflow {
@@ -144,11 +146,16 @@ class AiWorkflow {
     required this.version,
     required this.expiresAt,
     this.proposal,
+    this.failureStage,
+    this.failureCode,
+    this.journey,
   });
   final String id, status, step;
   final int version;
   final DateTime expiresAt;
   final AiProposal? proposal;
+  final String? failureStage, failureCode;
+  final Map<String, dynamic>? journey;
   String get label => workflowLabels[status]!;
 
   factory AiWorkflow.fromJson(dynamic value) {
@@ -199,6 +206,15 @@ class AiWorkflow {
         throw const FormatException();
       }
       proposal = AiProposal(
+        validationOutcome:
+            p['validation'] is Map &&
+                const [
+                  'Pass',
+                  'Fail',
+                  'NeedsInput',
+                ].contains(p['validation']['outcome'])
+            ? p['validation']['outcome'] as String
+            : null,
         studioId: s['studioId'],
         packageName: price['packageName'],
         date: s['date'],
@@ -243,8 +259,202 @@ class AiWorkflow {
       version: value['proposalVersion'],
       expiresAt: DateTime.parse(value['expiresAt']),
       proposal: proposal,
+      journey: _readJourney(value['journey']),
+      failureStage:
+          value['failure'] is Map &&
+              agentSteps.contains(value['failure']['stage'])
+          ? value['failure']['stage'] as String
+          : null,
+      failureCode: value['failure'] is Map && value['failure']['code'] is String
+          ? value['failure']['code'] as String
+          : null,
     );
   }
+}
+
+const agentSteps = [
+  'StudioMatching',
+  'PackageRecommendation',
+  'Scheduling',
+  'Validation',
+];
+
+Map<String, dynamic>? _readJourney(dynamic value) {
+  if (value == null) return null;
+  if (value is! Map<String, dynamic> ||
+      !agentSteps.contains(value['stage']) ||
+      value['revision'] is! int ||
+      value['revision'] < 1 ||
+      value['revision'] > 999999999 ||
+      value['busy'] is! bool ||
+      value['validated'] is! bool ||
+      value['submitted'] is! bool ||
+      value['options'] is! List ||
+      (value['options'] as List).length > 15) {
+    throw const FormatException('Invalid journey');
+  }
+  for (final key in ['studioOptionId', 'packageOptionId', 'scheduleOptionId']) {
+    if (value[key] != null &&
+        (value[key] is! String || !workflowIdPattern.hasMatch(value[key]))) {
+      throw const FormatException('Invalid journey selection');
+    }
+  }
+  final options = <Map<String, dynamic>>[];
+  final ids = <String>{};
+  for (final o in value['options'] as List) {
+    if (o is! Map<String, dynamic> ||
+        !agentSteps.take(3).contains(o['stage']) ||
+        o['eventId'] is! String ||
+        !workflowIdPattern.hasMatch(o['eventId']) ||
+        !ids.add(o['eventId']) ||
+        o['studioId'] is! String ||
+        !workflowIdPattern.hasMatch(o['studioId']) ||
+        o['name'] is! String ||
+        o['rank'] is! int ||
+        o['rank'] < 1 ||
+        o['rank'] > 5) {
+      throw const FormatException('Invalid journey option');
+    }
+    for (final key in ['price', 'durationHours']) {
+      if (o[key] != null &&
+          (o[key] is! num || !(o[key] as num).isFinite || o[key] < 0)) {
+        throw const FormatException('Invalid journey value');
+      }
+    }
+    for (final key in [
+      'imageUrl',
+      'location',
+      'specialties',
+      'reason',
+      'date',
+      'startTime',
+      'endTime',
+    ]) {
+      if (o[key] != null && o[key] is! String) {
+        throw const FormatException('Invalid journey text');
+      }
+    }
+    if (o['stage'] != 'StudioMatching' &&
+        (o['packageId'] is! String ||
+            !workflowIdPattern.hasMatch(o['packageId']))) {
+      throw const FormatException('Invalid package reference');
+    }
+    if (o['stage'] == 'Scheduling' &&
+        (o['date'] is! String ||
+            AiRequirements.date(o['date']) == null ||
+            !RegExp(
+              r'^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]{1,7})?$',
+            ).hasMatch(o['startTime'] ?? '') ||
+            !RegExp(
+              r'^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]{1,7})?$',
+            ).hasMatch(o['endTime'] ?? ''))) {
+      throw const FormatException('Invalid schedule');
+    }
+    if (o['extraHours'] != null &&
+        (o['extraHours'] is! int ||
+            o['extraHours'] < 0 ||
+            o['extraHours'] > 1000)) {
+      throw const FormatException('Invalid extra hours');
+    }
+    if (o['services'] != null &&
+        (o['services'] is! List ||
+            (o['services'] as List).any((s) => s is! String))) {
+      throw const FormatException('Invalid package services');
+    }
+    options.add({
+      for (final key in [
+        'stage',
+        'eventId',
+        'studioId',
+        'packageId',
+        'rank',
+        'name',
+        'imageUrl',
+        'location',
+        'specialties',
+        'reason',
+        'price',
+        'durationHours',
+        'extraHours',
+        'services',
+        'date',
+        'startTime',
+        'endTime',
+      ])
+        key: o[key],
+    });
+  }
+  return {
+    for (final key in [
+      'revision',
+      'stage',
+      'busy',
+      'validated',
+      'submitted',
+      'studioOptionId',
+      'packageOptionId',
+      'scheduleOptionId',
+    ])
+      key: value[key],
+    'errorCode': value['errorCode'] is String ? value['errorCode'] : null,
+    'options': options,
+  };
+}
+
+const agentTitles = [
+  'Studio Matching Agent',
+  'Package Recommendation Agent',
+  'Scheduling Agent',
+  'Validation & Safety Agent',
+];
+
+extension WorkflowStageState on AiWorkflow {
+  // A canonical proposal confirms the original run, not fresh availability.
+  // A stage-specific failure confirms only preceding stages in the sequential graph.
+  String stageState(int index) {
+    if (proposal != null) return 'Completed';
+    final failed = agentSteps.indexOf(failureStage ?? '');
+    if (failed >= 0) {
+      if (index < failed) return 'Completed';
+      if (index > failed) return 'Not executed';
+      return status == 'NeedsInput'
+          ? 'Needs input'
+          : status == 'RevalidationRequired'
+          ? 'Revalidation required'
+          : 'Failed';
+    }
+    // StudioMatching is also the backend's coarse execution marker; it does
+    // not expose which Python agent is currently running.
+    if (status == 'Submitted' || status == 'StudioMatching') {
+      return 'Waiting for result';
+    }
+    final active = agentSteps.indexOf(status);
+    if (active >= 0) {
+      return index < active
+          ? 'Completed'
+          : index == active
+          ? 'Running'
+          : 'Waiting';
+    }
+    return 'Not confirmed';
+  }
+
+  String get safeFailureMessage => switch (failureCode) {
+    'gemini_timeout' || 'gemini_unavailable' =>
+      'The AI provider is temporarily unavailable. Please try again later.',
+    'no_matching_studios' => 'No studio matches the requested requirements.',
+    'no_packages' ||
+    'no_matching_packages' ||
+    'budget_failure' => 'No package meets the requested services and budget.',
+    'no_available_slots' ||
+    'slot_unavailable' ||
+    'booking_conflict' => 'No available time fits this recommendation.',
+    'price_changed' =>
+      'The package price changed. Generate a new recommendation.',
+    'stale_recommendation' ||
+    'revalidation_required' => 'The recommendation requires fresh validation.',
+    _ => 'The recommendation could not be safely completed. Please try again.',
+  };
 }
 
 class AiWorkflowPage {

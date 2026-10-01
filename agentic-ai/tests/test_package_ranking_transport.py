@@ -41,7 +41,7 @@ def test_full_app_sdk_transport_and_validation(monkeypatch, scenario, expected):
                 output = slot_ranking()
             elif not is_package:
                 output = json.dumps({'rankedStudios': [{'studioId': SID, 'explanationSummary':
-                    'Supports all photography types and lists a starting price within the maximum budget.'}]})
+                    'Supports all photography types and has an active package with a qualifying backend quote.'}]})
             else:
                 configs.append(config)
                 assert config['responseMimeType'] == 'application/json'
@@ -86,6 +86,7 @@ def test_full_app_sdk_transport_and_validation(monkeypatch, scenario, expected):
                 assert req.url.path == f'/api/public/studios/{SID}/packages/{PID}/calculate-price'
                 return httpx.Response(200, json=quote())
             app.state.studio_matching.discovery.transport = httpx.MockTransport(backend)
+            app.state.studio_matching.packages.transport = httpx.MockTransport(backend)
             app.state.package_recommendation.discovery.transport = httpx.MockTransport(backend)
             app.state.scheduling.discovery.transport = httpx.MockTransport(backend)
             app.state.validation.discovery._transport = httpx.MockTransport(backend)

@@ -180,7 +180,9 @@ public sealed class AiWorkflowService
                 query.Where(
                     w =>
                         w.SelectedStudio != null &&
-                        w.SelectedStudio.UserId == actor.Id
+                        w.SelectedStudio.UserId == actor.Id &&
+                        (!w.Events.Any(e => e.EventType == "JourneyV1") ||
+                         w.Status == AiWorkflowStatus.AwaitingApproval || w.Status == AiWorkflowStatus.Approved || w.Status == AiWorkflowStatus.Rejected)
                 ),
 
             "Admin" =>
@@ -255,8 +257,7 @@ public sealed class AiWorkflowService
 
                 ExpiresAt =
                     w.ExpiresAt,
-                Events = w.Events.Where(e => e.EventType == "WorkflowExecutionStateChanged" && !e.Success)
-                    .OrderByDescending(e => e.CreatedAt).Take(1).ToList()
+                Events = w.Events.Where(e => e.EventType == "JourneyV1" || e.EventType == "WorkflowExecutionStateChanged" && !e.Success).ToList()
             }
         );
 
@@ -697,7 +698,7 @@ public sealed class AiWorkflowService
             workflow.ProposalVersion,
             workflow.SelectedStudioId,
             workflow.SelectedPackageId,
-            proposal,
+            workflow.Events.Any(e => e.EventType == "JourneyV1") && JourneyState.Read(workflow).Validated is null ? null : proposal,
             workflow.CreatedAt,
             workflow.UpdatedAt,
             workflow.ExpiresAt

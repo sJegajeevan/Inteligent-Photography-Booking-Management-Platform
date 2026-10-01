@@ -13,6 +13,7 @@ from app.scheduling_discovery import SchedulingDiscoveryTool
 from app.validation import ValidationAgent
 from app.validation_discovery import ValidationDiscoveryTool
 from app.internal_execution import register_execution
+from app.journey import register_journey
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -26,6 +27,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     service.state.workflow = build_workflow(service.state.studio_matching, service.state.package_recommendation,
                                             service.state.scheduling, service.state.validation)
     register_execution(service, settings)
+    register_journey(service, settings)
 
     @service.get("/health")
     async def health():

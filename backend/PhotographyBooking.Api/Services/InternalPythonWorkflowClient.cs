@@ -26,6 +26,53 @@ public sealed record PythonWorkflowOptions(string? BaseUrl, string? Token, int T
 
 public sealed class InternalPythonWorkflowClient(HttpClient http, PythonWorkflowOptions options)
 {
+    public async Task<JsonElement> StageAsync(Guid workflowId, Guid operationId, string stage, object input, CancellationToken ct)
+    {
+        if (!options.Valid(out var origin)) throw new AiWorkflowApiFailure("execution_unavailable");
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(options.TimeoutSeconds));
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(origin!, $"internal/ai-workflows/{workflowId:D}/stage"));
+        request.Headers.Add("X-Internal-Token", options.Token);
+        request.Content = new StringContent(CanonicalProposalService.Serialize(input), Encoding.UTF8, "application/json");
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
+        if (response.StatusCode != HttpStatusCode.OK || response.Content.Headers.ContentType?.MediaType != "application/json")
+            throw new AiWorkflowApiFailure("execution_unavailable");
+        await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token);
+        using var buffer = new MemoryStream();
+        var chunk = new byte[4096];
+        int count;
+        while ((count = await stream.ReadAsync(chunk, timeout.Token)) > 0)
+        {
+            if (buffer.Length + count > ResponseLimit) throw new JsonException();
+            buffer.Write(chunk, 0, count);
+        }
+        using var document = JsonDocument.Parse(buffer.ToArray());
+        var result = document.RootElement;
+        UniqueKeys(result);
+        if (result.ValueKind != JsonValueKind.Object || result.EnumerateObject().Count() != 5 ||
+            result.EnumerateObject().Any(p => p.Name is not ("workflowId" or "operationId" or "stage" or "output" or "errorCode")))
+            throw new JsonException();
+        if (result.GetProperty("workflowId").GetGuid() != workflowId || result.GetProperty("operationId").GetGuid() != operationId ||
+            result.GetProperty("stage").GetString() != stage) throw new JsonException();
+        if (result.GetProperty("errorCode").GetString() is { } code)
+            throw new AiWorkflowApiFailure(AiExecutionFailure.ValidCode(code) ? code : "execution_failed");
+        return result.GetProperty("output").Clone();
+    }
+
+    private static void UniqueKeys(JsonElement value)
+    {
+        if (value.ValueKind == JsonValueKind.Object)
+        {
+            var keys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var property in value.EnumerateObject())
+            {
+                if (!keys.Add(property.Name)) throw new JsonException();
+                UniqueKeys(property.Value);
+            }
+        }
+        else if (value.ValueKind == JsonValueKind.Array)
+            foreach (var item in value.EnumerateArray()) UniqueKeys(item);
+    }
     public const int ResponseLimit = 65536;
     internal static readonly JsonSerializerOptions Wire = new(JsonSerializerDefaults.Web)
     {
@@ -78,7 +125,7 @@ public sealed class InternalPythonWorkflowClient(HttpClient http, PythonWorkflow
 
     // Require all typed fields and reject duplicates, unknown fields, integer enums and altered constant flags.
     // Pydantic emits decimal strings; typed decimal parsing preserves their precision.
-    private static void VerifyShape(JsonElement source, JsonElement expected)
+    internal static void VerifyShape(JsonElement source, JsonElement expected)
     {
         if (expected.ValueKind == JsonValueKind.Object)
         {

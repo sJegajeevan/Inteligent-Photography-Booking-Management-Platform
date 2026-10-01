@@ -1,17 +1,16 @@
 """Deterministic eligibility and backend quotes precede constrained AI ranking."""
-import asyncio
 import json
-from math import ceil
 
 from pydantic import ValidationError
 
 from app.llm import GeminiService
 from app.matching_contracts import CustomerPhotographyRequirements, StudioMatchingOutput
 from app.package_contracts import (
-    PackageCustomization, PackageRanking, PackageRecommendation,
+    PackageRanking, PackageRecommendation,
     PackageRecommendationOutput, validate_id,
 )
-from app.package_discovery import PackageDiscoveryFailure, PackageDiscoveryTool
+from app.package_discovery import PackageDiscoveryTool
+from app.package_eligibility import eligible_packages
 
 
 class PackageFailure(Exception):
@@ -21,7 +20,7 @@ class PackageFailure(Exception):
 
 
 class PackageRecommendationAgent:
-    MAX_CANDIDATES = 50
+    MAX_RANKING_CANDIDATES = 50
 
     def __init__(self, discovery: PackageDiscoveryTool, llm: GeminiService):
         self.discovery = discovery
@@ -35,44 +34,21 @@ class PackageRecommendationAgent:
                 raise ValueError("Invalid ranked studios")
         except (ValueError, TypeError, AttributeError):
             raise PackageFailure("invalid_package_input") from None
-        requested = {name.strip().casefold() for name in requirements.requestedServices}
-        candidates = {}
-        try:
-            # Total deadline covers all package and quote requests, not just each
-            # individual call. Serial requests keep request volume predictable.
-            async with asyncio.timeout(self.discovery.settings.aspnet_timeout_seconds):
-                packages = []
-                for studio_id in studio_ids:
-                    packages.extend(await self.discovery.packages(studio_id))
-                if len({p.id.lower() for p in packages}) != len(packages):
-                    raise PackageDiscoveryFailure("invalid_backend_response")
-                if not packages:
-                    raise PackageFailure("no_packages")
-                eligible = [p for p in packages if requested <=
-                            {s.serviceName.strip().casefold() for s in p.services}]
-                if len(eligible) > self.MAX_CANDIDATES:
-                    # Fail explicitly rather than silently omit potentially
-                    # affordable packages or claim an exhaustive best match.
-                    raise PackageFailure("package_candidate_limit_exceeded")
-                for package in eligible:
-                    customization = PackageCustomization(
-                        extraHours=max(0, ceil(requirements.coverageHours - package.durationHours)))
-                    quote = await self.discovery.quote(package.studioId, package.id, customization)
-                    if quote.finalPrice > requirements.maximumBudget:
-                        continue
-                    if requirements.minimumBudget is not None and quote.finalPrice < requirements.minimumBudget:
-                        continue
-                    reasons = ["The backend quote for the selected customization is within the requested budget."]
-                    if requested:
-                        reasons.append("Includes every requested service and the backend quote is within the requested budget.")
-                    reasons.append("Package duration plus the selected extra hours covers the requested coverage hours.")
-                    candidates[(package.studioId, package.id)] = (package, customization, quote, reasons)
-        except TimeoutError:
-            raise PackageDiscoveryFailure("backend_timeout") from None
+        candidates = await eligible_packages(self.discovery, requirements, studio_ids, require_packages=True)
         if not candidates:
             raise PackageFailure("no_matching_packages")
+        target_count = min(3, len(candidates))
+        shortlisted = len(candidates) > self.MAX_RANKING_CANDIDATES
+        if shortlisted:
+            # All candidates have passed authoritative eligibility. Bound Gemini
+            # input by affordability, with stable IDs breaking equal-price ties.
+            # Validate its output against this exact supplied shortlist as well.
+            candidates = dict(sorted(candidates.items(), key=lambda item: (
+                item[1][2].finalPrice, item[0][0], item[0][1]
+            ))[:self.MAX_RANKING_CANDIDATES])
 
         payload = json.dumps({
+            "targetCount": target_count,
             "requirements": requirements.model_dump(mode="json", include={
                 "photographyType", "coverageHours", "requestedServices", "minimumBudget",
                 "maximumBudget", "currency",
@@ -104,6 +80,8 @@ class PackageRecommendationAgent:
                 raise PackageFailure("unsupported_recommendation_claim")
             recommendations.append(PackageRecommendation(
                 **match.model_dump(), customization=customization, pricing=quote))
+        if len(recommendations) != target_count:
+            raise PackageFailure("invalid_gemini_output")
         caveats = [
             "Quotes are point-in-time LKR prices, not reservations or availability checks.",
             "Extra hours round any coverage shortfall up to a whole purchased hour.",
@@ -112,4 +90,6 @@ class PackageRecommendationAgent:
         ]
         if requirements.notes:
             caveats.append("Additional notes have not been verified.")
+        if shortlisted:
+            caveats.append("AI ranking considers the 50 lowest-priced eligible backend quotes; equal prices are ordered by studio and package ID.")
         return PackageRecommendationOutput(rankedPackages=recommendations, unmetPreferences=caveats)

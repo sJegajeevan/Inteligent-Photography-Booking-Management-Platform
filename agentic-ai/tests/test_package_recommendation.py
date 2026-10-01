@@ -290,10 +290,10 @@ def test_invalid_uuid_path_cannot_make_request(bad_id):
     handler.assert_not_called()
 
 
-def test_candidate_limit_fails_before_quotes_or_gemini():
-    data = [package(id=f'cccccccc-1234-4234-8234-{i:012d}', addons=[]) for i in range(51)]
+def test_discovery_limit_still_fails_before_quotes_or_gemini():
+    data = [package(id=f'cccccccc-1234-4234-8234-{i:012d}', addons=[]) for i in range(2001)]
     result, llm, calls = execute(packages=data)
-    assert result['error_code'] == 'package_candidate_limit_exceeded'
+    assert result['error_code'] == 'invalid_backend_response'
     assert len(calls) == 1
     llm.rank_packages.assert_not_called()
 

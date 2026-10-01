@@ -49,7 +49,7 @@ const valid = {
 };
 
 Future<void> submit(WidgetTester tester) async {
-  final button = find.widgetWithText(FilledButton, 'Get recommendation');
+  final button = find.widgetWithText(FilledButton, 'Find Studios with AI');
   await tester.scrollUntilVisible(
     button,
     250,
@@ -164,7 +164,7 @@ void main() {
         ),
       );
       await fill(tester, valid);
-      final button = find.widgetWithText(FilledButton, 'Get recommendation');
+      final button = find.widgetWithText(FilledButton, 'Find Studios with AI');
       await tester.ensureVisible(button);
       final callback = tester.widget<FilledButton>(button).onPressed!;
       callback();

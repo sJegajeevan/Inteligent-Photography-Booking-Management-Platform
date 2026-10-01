@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../models/ai_workflow.dart';
 import '../../services/ai_workflow_service.dart';
-import '../../models/photography_package.dart';
 import '../booking/my_bookings_screen.dart';
+import 'ai_workflow_progress.dart';
+import 'ai_journey_view.dart';
 
 class AiWorkflowsScreen extends StatefulWidget {
   const AiWorkflowsScreen({super.key, this.service});
@@ -109,7 +110,6 @@ class _AiWorkflowsScreenState extends State<AiWorkflowsScreen> {
                       onTap: () => _open(
                         AiWorkflowStatusScreen(
                           workflowId: w.id,
-                          initial: w,
                           service: widget.service,
                         ),
                       ),
@@ -330,6 +330,20 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
                 style: Theme.of(context).textTheme.headlineSmall
                     ?.copyWith(fontWeight: FontWeight.w700),
               ),
+              const Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  Chip(
+                    avatar: Icon(Icons.radio_button_checked, size: 16),
+                    label: Text('Requirements'),
+                  ),
+                  Chip(label: Text('Studio')),
+                  Chip(label: Text('Package')),
+                  Chip(label: Text('Schedule')),
+                  Chip(label: Text('Validate')),
+                ],
+              ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Text(
@@ -399,7 +413,7 @@ class _AiRequirementsScreenState extends State<AiRequirementsScreen> {
                   child: Text(
                     _submitting
                         ? 'Finding the best match for you...'
-                        : 'Get recommendation',
+                        : 'Find Studios with AI',
                   ),
                 ),
               ),
@@ -442,6 +456,48 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
   AiWorkflow? _workflow;
   String? _error, _studio;
   bool _loading = false;
+  String? _runningStage;
+  String? _pendingAction;
+
+  Future<void> _act(String action, String? option) async {
+    if (_loading || _workflow?.journey == null) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _pendingAction = action;
+      _runningStage = const {
+        'studio': 'PackageRecommendation',
+        'package': 'Scheduling',
+        'schedule': 'Validation',
+      }[action];
+    });
+    try {
+      final result = await _service.journeyAction(
+        widget.workflowId,
+        action,
+        _workflow!.journey!['revision'] as int,
+        optionEventId: option,
+      );
+      if (mounted) setState(() => _workflow = result);
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _error = error is AiWorkflowException
+              ? error.message
+              : 'Unable to continue. Refresh your saved journey.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _runningStage = null;
+          _pendingAction = null;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -499,15 +555,23 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
   @override
   Widget build(BuildContext context) {
     final w = _workflow, p = _workflow?.proposal;
+    if (w?.journey != null) {
+      return AiJourneyView(
+        workflow: w!,
+        busy: _loading,
+        runningStage: _runningStage,
+        loadingMessage: _loading && _pendingAction == null
+            ? 'Refreshing your saved journey…'
+            : _pendingAction == 'submit'
+            ? 'Sending for studio approval…'
+            : null,
+        error: _error,
+        onAction: _act,
+        onRefresh: _load,
+      );
+    }
     final theme = Theme.of(context);
     final localizations = MaterialLocalizations.of(context);
-    String time(String value) => localizations.formatTimeOfDay(
-      TimeOfDay(
-        hour: int.parse(value.split(':')[0]),
-        minute: int.parse(value.split(':')[1]),
-      ),
-      alwaysUse24HourFormat: false,
-    );
     final expiry = w?.expiresAt.toUtc().add(
       const Duration(hours: 5, minutes: 30),
     );
@@ -568,46 +632,10 @@ class _AiWorkflowStatusScreenState extends State<AiWorkflowStatusScreen> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (p != null) ...[
-                            const SizedBox(height: 24),
-                            detail(
-                              'Recommended studio',
-                              _studio?.trim().isNotEmpty == true
-                                  ? _studio!.trim()
-                                  : 'Studio name unavailable',
-                            ),
-                            detail('Recommended package', p.packageName),
+                          const SizedBox(height: 20),
+                          AiWorkflowProgress(workflow: w, studioName: _studio),
+                          if (p != null)
                             detail('Photography requirement', p.summary),
-                            const Divider(height: 24),
-                            detail(
-                              'Date',
-                              localizations.formatFullDate(
-                                AiRequirements.date(p.date)!,
-                              ),
-                            ),
-                            detail(
-                              'Time · Sri Lanka',
-                              '${time(p.start)} – ${time(p.end)}',
-                            ),
-                            Text(
-                              'Total price',
-                              style: theme.textTheme.labelMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              formatLkr(p.price),
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            detail(
-                              'Customization',
-                              '${p.extraHours} extra hours · ${p.additionalPhotographers} additional photographers${p.addonNames.isEmpty ? '' : '\nAdd-ons: ${p.addonNames.join(', ')}'}',
-                            ),
-                            const Divider(height: 24),
-                          ],
                           Semantics(
                             liveRegion: true,
                             child: Text(

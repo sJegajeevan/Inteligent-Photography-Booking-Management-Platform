@@ -17,8 +17,8 @@ from app.workflow import MatchingContext, build_workflow
 
 
 STUDIO_ID = "ab123456-1234-4234-8234-123456789012"
-REASON = "Lists the requested photography type and a starting price within the maximum budget."
-WILDCARD_REASON = "Supports all photography types and lists a starting price within the maximum budget."
+REASON = "Lists the requested photography type and has an active package with a qualifying backend quote."
+WILDCARD_REASON = "Supports all photography types and has an active package with a qualifying backend quote."
 
 
 def request(**changes):
@@ -43,11 +43,24 @@ def ranking(studio_id=STUDIO_ID, reason=REASON, **changes):
     return json.dumps(result)
 
 
+
+def with_feasible_packages(handler):
+    # Real read-only package/quote adapter; the Studio discovery fixture remains independent.
+    from tests.test_package_recommendation import package, quote
+    def backend(req):
+        if '/packages' in req.url.path:
+            sid = req.url.path.split('/')[4]
+            if req.method == 'GET':
+                return httpx.Response(200, json=[package(studioId=sid, addons=[])])
+            return httpx.Response(200, json=quote())
+        return handler(req)
+    return backend
+
 def execute(handler=None, llm=None, matching_request=None):
     handler = handler or (lambda req: httpx.Response(200, json=[studio()]))
     llm = llm or SimpleNamespace(rank_studios=AsyncMock(return_value=ranking()))
     settings = Settings(_env_file=None)
-    agent = StudioMatchingAgent(StudioDiscoveryTool(settings, transport=httpx.MockTransport(handler)), llm)
+    agent = StudioMatchingAgent(StudioDiscoveryTool(settings, transport=httpx.MockTransport(with_feasible_packages(handler))), llm)
     return asyncio.run(build_workflow(agent).ainvoke(
         {}, context=MatchingContext(matching_request or request()))), llm
 
@@ -63,7 +76,7 @@ def test_success_and_graph_boundary():
     llm.rank_studios.assert_awaited_once()
 
 
-@pytest.mark.parametrize("data", [[], [studio(photographyTypes=["Portrait"])], [studio(startingPrice=100001)]])
+@pytest.mark.parametrize("data", [[], [studio(photographyTypes=["Portrait"])]] )
 def test_no_eligible_candidates_skips_gemini(data):
     result, llm = execute(lambda req: httpx.Response(200, json=data))
     assert result["status"] == "Failed"
@@ -78,7 +91,7 @@ def test_no_eligible_candidates_skips_gemini(data):
     ([" ALL "], 100000, WILDCARD_REASON, True),
     ([" Wedding "], 50000, REASON, True),
     (["Portrait"], 50000, REASON, False),
-    (["All"], 100001, WILDCARD_REASON, False),
+    (["All"], 100001, WILDCARD_REASON, True),
 ])
 def test_photography_type_wildcard_eligibility(types, price, reason, eligible):
     result, llm = execute(
@@ -316,7 +329,7 @@ def test_ranking_json_schema_wire_transport_and_validation(monkeypatch, provider
             monkeypatch.setattr("app.llm.genai.Client", client_factory)
             settings = Settings(_env_file=None, gemini_api_key="test-only-dummy-key", gemini_model="test-model")
             tool = StudioDiscoveryTool(settings, transport=httpx.MockTransport(
-                lambda req: httpx.Response(200, json=[studio()])))
+                with_feasible_packages(lambda req: httpx.Response(200, json=[studio()]))))
             try:
                 result = await build_workflow(StudioMatchingAgent(tool, GeminiService(settings))).ainvoke(
                     {}, context=MatchingContext(request()))
@@ -346,7 +359,7 @@ def test_model_can_rank_only_supplied_candidates_in_its_chosen_order():
 
 def test_graph_emits_only_expected_success_stages():
     tool = StudioDiscoveryTool(Settings(_env_file=None), transport=httpx.MockTransport(
-        lambda req: httpx.Response(200, json=[studio()])))
+        with_feasible_packages(lambda req: httpx.Response(200, json=[studio()]))))
     agent = StudioMatchingAgent(tool, SimpleNamespace(rank_studios=AsyncMock(return_value=ranking())))
     async def run():
         return [list(update)[0] async for update in build_workflow(agent).astream(
@@ -354,9 +367,9 @@ def test_graph_emits_only_expected_success_stages():
     assert asyncio.run(run()) == ["Submitted", "StudioMatching", "PackageRecommendation"]
 
 
-def test_candidate_prompt_limit_is_disclosed():
+def test_all_eligible_candidates_are_considered_for_top_three():
     studios = [studio(id=f"ab123456-1234-4234-8234-{i:012d}") for i in range(51)]
     result, llm = execute(lambda req: httpx.Response(200, json=studios),
-                        llm=SimpleNamespace(rank_studios=AsyncMock(return_value=ranking(studios[0]["id"]))))
-    assert len(json.loads(llm.rank_studios.call_args.args[0])["candidates"]) == 50
-    assert any("50" in item for item in result["studio_matching"]["unmetPreferences"])
+                        llm=SimpleNamespace(rank_studios=AsyncMock(return_value=json.dumps({"rankedStudios": [{"studioId": s["id"], "explanationSummary": REASON} for s in studios[:3]]}))))
+    assert len(json.loads(llm.rank_studios.call_args.args[0])["candidates"]) == 51
+    assert len(result["studio_matching"]["rankedStudios"]) == 3

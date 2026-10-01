@@ -93,3 +93,29 @@ test('review controls disabled while request pending', () => {
   assert.match(html, /disabled="">Approve/);
   assert.match(html, /disabled="">Reject/);
 });
+
+test('four-stage summary uses canonical validation and precedes review', () => {
+  const data = fixture();
+  data.proposal.validation = { outcome: 'Pass', raw: 'PRIVATE' };
+  const html = renderToStaticMarkup(createElement(View, { workflow: parseWorkflow(data), studioName: 'Snap Studio', onApprove() {} }));
+  for (const label of ['AI Recommendation Summary', 'Studio Match', 'Package Recommendation', 'Schedule', 'Validation', 'Proposal validation passed', 'Awaiting Studio Approval']) assert.ok(html.includes(label), label);
+  assert.equal((html.match(/class="ai-agent-state">Completed/g) || []).length, 4);
+  assert.ok(html.indexOf('AI Recommendation Summary') < html.indexOf('>Approve</button>'));
+  assert.ok(!html.includes('PRIVATE'));
+  assert.ok(!html.includes(id));
+});
+
+test('missing validation never invents passed checks', () => {
+  const html = renderToStaticMarkup(createElement(View, { workflow: parseWorkflow(fixture()) }));
+  assert.ok(html.includes('Validation result not available'));
+  assert.ok(!html.includes('validation passed'));
+});
+
+test('final journey summary includes customer choices before the single approval decision', () => {
+  const data = fixture();
+  data.proposal.validation = { outcome: 'Pass' };
+  const html = renderToStaticMarkup(createElement(View, { workflow: parseWorkflow(data), onApprove() {}, onReject() {}, onReason() {}, reason: 'Unavailable' }));
+  for (const label of ['Customer Requirements', 'Selected Studio', 'Selected Package', 'Selected Schedule', 'Validation Passed']) assert.ok(html.includes(label));
+  assert.equal((html.match(/>Approve<\/button>/g) || []).length, 1);
+  assert.equal((html.match(/>Reject<\/button>/g) || []).length, 1);
+});

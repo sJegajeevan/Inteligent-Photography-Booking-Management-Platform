@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -15,6 +16,48 @@ class AiWorkflowException implements Exception {
 }
 
 class AiWorkflowService {
+  static String operationId() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+  }
+
+  Future<AiWorkflow> journeyAction(
+    String id,
+    String action,
+    int revision, {
+    String? optionEventId,
+    String? operation,
+  }) async {
+    if (!workflowIdPattern.hasMatch(id) ||
+        !const [
+          'studio',
+          'package',
+          'schedule',
+          'retry',
+          'submit',
+        ].contains(action) ||
+        revision < 1 ||
+        revision > 999999998 ||
+        optionEventId != null && !workflowIdPattern.hasMatch(optionEventId)) {
+      throw const AiWorkflowException(
+        'Invalid journey selection. Refresh to continue.',
+      );
+    }
+    final result = await _request(
+      '/$id/journey/$action',
+      body: {
+        'operationId': operation ?? operationId(),
+        'revision': revision,
+        'optionEventId': ?optionEventId,
+      },
+    );
+    return AiWorkflow.fromJson(result);
+  }
+
   AiWorkflowService({http.Client? client, AuthService? auth})
     : _client = client ?? http.Client(),
       _auth = auth ?? AuthService();
@@ -88,7 +131,13 @@ class AiWorkflowService {
         );
       }
 
-      if (response.statusCode != (body == null ? 200 : 201)) {
+      if (response.statusCode == 409) {
+        throw const AiWorkflowException(
+          'This journey has changed or needs fresh validation. Refresh to continue.',
+        );
+      }
+      if (response.statusCode != 200 &&
+          !(body != null && response.statusCode == 201)) {
         throw AiWorkflowException(
           body == null
               ? 'Unable to load recommendations. Please refresh later.'
@@ -117,7 +166,10 @@ class AiWorkflowService {
 
     final data = await _request(
       '',
-      body: {'requirements': requirements.toJson()},
+      body: {
+        'operationId': operationId(),
+        'requirements': requirements.toJson(),
+      },
     );
 
     try {

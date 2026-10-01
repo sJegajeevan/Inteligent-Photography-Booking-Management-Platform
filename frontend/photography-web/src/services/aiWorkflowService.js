@@ -28,7 +28,8 @@ export function parseWorkflow(value) {
       addons: p.pricing.selectedAddons.map(a => { if (!text(a.name)) throw invalid(); return a.name; }),
       photographyType: r.photographyType, location: r.location, maximumBudget: r.maximumBudget,
       coverageHours: r.coverageHours, requestedServices: [...r.requestedServices],
-      earliestDate: r.earliestDate, latestDate: r.latestDate };
+      earliestDate: r.earliestDate, latestDate: r.latestDate,
+      validationOutcome: ['Pass', 'Fail', 'NeedsInput'].includes(p.validation?.outcome) ? p.validation.outcome : null };
   }
   if (["AwaitingApproval", "Approved", "Rejected"].includes(value.status) && !proposal) throw invalid();
   return { id: value.id, status: value.status, proposalVersion: value.proposalVersion, expiresAt: value.expiresAt, proposal };

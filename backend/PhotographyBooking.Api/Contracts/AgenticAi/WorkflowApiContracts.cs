@@ -7,6 +7,7 @@ namespace PhotographyBooking.Api.Contracts.AgenticAi;
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class CreateAiWorkflowRequest
 {
+    public Guid? OperationId { get; init; }
     [Required] public required CustomerPhotographyRequirements Requirements { get; init; }
 }
 
@@ -39,6 +40,8 @@ public sealed record AiWorkflowResponse(Guid Id, string Status, string CurrentSt
     Guid? SelectedStudioId, Guid? SelectedPackageId, FinalRecommendationProposal? Proposal,
     DateTime CreatedAt, DateTime UpdatedAt, DateTime ExpiresAt)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JourneyView? Journey { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AiWorkflowFailure? Failure { get; init; }
 }

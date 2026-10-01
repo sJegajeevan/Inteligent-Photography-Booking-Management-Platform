@@ -117,7 +117,8 @@ void main() {
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer customer-jwt');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
-        expect(body.keys, ['requirements']);
+        expect(body.keys.toSet(), {'operationId', 'requirements'});
+        expect(workflowIdPattern.hasMatch(body['operationId']), isTrue);
         expect(body['requirements'], requirements().toJson());
         expect(request.body, isNot(contains('customerId')));
         expect(request.body, isNot(contains('reviewer')));
@@ -319,7 +320,7 @@ void main() {
         await tester.ensureVisible(find.byKey(ValueKey(entry.key)));
         await tester.enterText(find.byKey(ValueKey(entry.key)), entry.value);
       }
-      final submit = find.widgetWithText(FilledButton, 'Get recommendation');
+      final submit = find.widgetWithText(FilledButton, 'Find Studios with AI');
       await tester.ensureVisible(submit);
       final submitCallback = tester.widget<FilledButton>(submit).onPressed!;
       submitCallback();

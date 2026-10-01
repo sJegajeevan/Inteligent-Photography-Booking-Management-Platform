@@ -142,6 +142,8 @@ var invalidCustomization = new RecommendationSelection {
     Customization = new() { ExtraHours = 1001 }
 };
 Check((await proposalValidator.CheckAsync(invalidCustomization, today)).Pricing is null, "Nested customization range checked before DB");
+var journeyCount = await JourneyExecutionChecks.RunAsync();
+Console.WriteLine($"Passed {journeyCount} staged journey execution checks.");
 var schedulingCount = await SchedulingChecks.RunAsync();
 var endpointCount = await SchedulingEndpointChecks.RunAsync();
 var finalValidationCount = await FinalValidationChecks.RunAsync();

@@ -6,11 +6,27 @@ export default function AiWorkflowView({ workflow, studioName, busy = false, rea
   const p = workflow.proposal;
   return <article className="ai-workflow-card">
     <header><h2>{p?.packageName || "Recommendation in progress"}</h2><span className="ai-workflow-status">{workflowLabels[workflow.status]}</span></header>
-    <p>Recommendation {workflow.id.slice(0, 8)}</p>
     <p>Proposal version {workflow.proposalVersion} · Expires {new Date(workflow.expiresAt).toLocaleString("en-LK", { timeZone: "Asia/Colombo" })} (Sri Lanka)</p>
     {workflow.status === "RevalidationRequired" && <p role="status">{revalidationMessage}</p>}
     {workflow.status === "Approved" && <p role="status">Recommendation approved. Check My Bookings for the booking.</p>}
     {workflow.status === "Rejected" && <p role="status">This recommendation was rejected.</p>}
+    <section aria-label="AI Recommendation Summary">
+      <h3>AI Recommendation Summary</h3>
+      <p>Customer Requirements → Selected Studio → Selected Package → Selected Schedule → {p?.validationOutcome === 'Pass' ? 'Validation Passed' : 'Validation'}</p>
+      <ol className="ai-agent-summary">
+        {[
+          ['Studio Match', p ? studioName || 'Your selected studio' : 'Studio result not available.'],
+          ['Package Recommendation', p ? `${p.packageName} · Authoritative price: ${money(p.price)}${p.addons.length ? ` · Add-ons: ${p.addons.join(', ')}` : ''}` : 'Package result not available.'],
+          ['Schedule', p ? `${p.date} · ${p.startTime}–${p.endTime} (Sri Lanka). Availability is checked again on approval.` : 'Schedule result not available.'],
+          ['Validation', p?.validationOutcome === 'Pass' ? 'Proposal validation passed at recommendation time. This is not a reservation.' : p?.validationOutcome === 'Fail' ? 'Proposal validation failed.' : p?.validationOutcome === 'NeedsInput' ? 'Validation needs more information.' : 'Validation result not available.'],
+        ].map(([title, detail]) => <li key={title}>
+          <h4><span aria-hidden="true">{p ? '✓' : '○'}</span> {title}</h4>
+          <span className="ai-agent-state">{p ? 'Completed' : 'Not confirmed'}</span>
+          <p>{detail}</p>
+        </li>)}
+      </ol>
+      <p className="ai-workflow-status">Overall status: {workflow.status === 'AwaitingApproval' ? 'Awaiting Studio Approval' : workflowLabels[workflow.status]}</p>
+    </section>
     {p && <>
       <dl className="ai-workflow-facts">
         <div><dt>Studio</dt><dd>{studioName || "Your selected studio"}</dd></div>

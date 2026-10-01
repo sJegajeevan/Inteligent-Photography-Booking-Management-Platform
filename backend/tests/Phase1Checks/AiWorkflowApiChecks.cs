@@ -194,6 +194,8 @@ internal static class AiWorkflowApiChecks
             );
 
         builder.Services.AddSingleton(service);
+        // These existing checks isolate the HTTP/identity contract. Journey execution has its own IO-seam checks.
+        builder.Services.AddSingleton<IAiJourneyService>(new TransportJourney(service));
 
         builder.Services
             .AddAuthentication(
@@ -1692,4 +1694,13 @@ internal static class AiWorkflowApiChecks
 
         return count;
     }
+}
+
+internal sealed class TransportJourney(AiWorkflowService service) : IAiJourneyService
+{
+    public Task<AiWorkflowResponse> CreateAsync(CreateAiWorkflowRequest request, ClaimsPrincipal user, CancellationToken ct)
+        => service.CreateAsync(request, user, ct);
+    public Task<AiWorkflowResponse> GetAsync(Guid id, ClaimsPrincipal user, CancellationToken ct) => service.GetAsync(id, user, ct);
+    public Task<AiWorkflowResponse> ActAsync(Guid id, string action, JourneyAction request, ClaimsPrincipal user, CancellationToken ct)
+        => throw new NotSupportedException();
 }

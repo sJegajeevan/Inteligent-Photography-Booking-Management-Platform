@@ -44,6 +44,7 @@ builder.Services.AddScoped<PhotographyBooking.Api.Services.AiWorkflowApprovalSer
 builder.Services.AddScoped<PhotographyBooking.Api.Services.CanonicalProposalService>();
 builder.Services.AddScoped<PhotographyBooking.Api.Services.AiWorkflowPublicationService>();
 builder.Services.AddScoped<PhotographyBooking.Api.Services.AiWorkflowService>();
+builder.Services.AddScoped<PhotographyBooking.Api.Services.IAiJourneyService, PhotographyBooking.Api.Services.AiJourneyService>();
 builder.Services.AddSingleton(PhotographyBooking.Api.Services.PythonWorkflowOptions.FromEnvironment());
 builder.Services.AddHttpClient<PhotographyBooking.Api.Services.InternalPythonWorkflowClient>(client =>
     client.Timeout = Timeout.InfiniteTimeSpan)
