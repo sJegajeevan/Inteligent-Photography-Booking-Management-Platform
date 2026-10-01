@@ -37,7 +37,7 @@ public static class AiWorkflowConfiguration
             entity.ToTable("AiWorkflowEvents", "public", table =>
             {
                 table.HasCheckConstraint("CK_AiWorkflowEvents_Duration", "\"DurationMs\" IS NULL OR \"DurationMs\" >= 0");
-                table.HasCheckConstraint("CK_AiWorkflowEvents_Details", "\"DetailsJson\" IS NULL OR (jsonb_typeof(\"DetailsJson\") = 'object' AND (\"DetailsJson\" - ARRAY['proposalVersion','errorCode','attempt']::text[]) = '{}'::jsonb)");
+                table.HasCheckConstraint("CK_AiWorkflowEvents_Details", AiJourneyDetailsConstraint.Sql);
             });
             entity.HasKey(e => e.Id);
             entity.Property(e => e.EventType).HasMaxLength(64).IsRequired();
