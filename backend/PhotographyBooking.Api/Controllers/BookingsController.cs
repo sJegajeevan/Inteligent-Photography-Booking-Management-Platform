@@ -68,6 +68,11 @@ public class BookingsController : ControllerBase
             return BadRequest(new { message = "Total price must be greater than zero." });
         }
 
+        if (HasTimeSlotConflict(request.StudioId, request.BookingDate, request.StartTime, request.EndTime, null))
+        {
+            return Conflict(new { message = "This studio is already booked during the selected time slot." });
+        }
+
         var booking = new Booking
         {
             CustomerId = request.CustomerId,
@@ -113,6 +118,11 @@ public class BookingsController : ControllerBase
             {
                 message = $"Cannot change booking status from {booking.Status} to {request.NewStatus}."
             });
+        }
+
+        if (RequiresBookingTimeCheck(request.NewStatus) && HasTimeSlotConflict(booking.StudioId, booking.BookingDate, booking.StartTime, booking.EndTime, booking.Id))
+        {
+            return Conflict(new { message = "This time slot conflicts with another active booking for the same studio." });
         }
 
         var oldStatus = booking.Status;
@@ -197,6 +207,29 @@ public class BookingsController : ControllerBase
                 or BookingStatus.Cancelled,
             _ => false
         };
+    }
+
+    private static bool RequiresBookingTimeCheck(BookingStatus status)
+    {
+        return status is BookingStatus.Pending
+            or BookingStatus.AIRecommended
+            or BookingStatus.AwaitingApproval
+            or BookingStatus.Confirmed
+            or BookingStatus.Rescheduled;
+    }
+
+    private bool HasTimeSlotConflict(int studioId, DateOnly bookingDate, TimeOnly startTime, TimeOnly endTime, int? excludeBookingId)
+    {
+        var conflictingBooking = _context.Bookings
+            .AsNoTracking()
+            .Where(booking => booking.StudioId == studioId)
+            .Where(booking => booking.BookingDate == bookingDate)
+            .Where(booking => booking.Id != (excludeBookingId ?? -1))
+            .Where(booking => booking.Status != BookingStatus.Cancelled && booking.Status != BookingStatus.Rejected && booking.Status != BookingStatus.Completed)
+            .FirstOrDefault(booking =>
+                startTime < booking.EndTime && endTime > booking.StartTime);
+
+        return conflictingBooking is not null;
     }
 
     private void RecordStatusChange(

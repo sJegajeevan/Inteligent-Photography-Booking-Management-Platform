@@ -52,14 +52,16 @@ function StudioAvatar({ profile }) {
   return <span className="studio-layout-avatar">{image && !failed ? <img src={image} alt="" onError={() => setFailed(true)} /> : name.charAt(0).toUpperCase()}</span>;
 }
 
-export default function StudioLayout({ page, profile, children }) {
+export default function StudioLayout({ page, profile, bookings = [], bookingsLoading = false, children }) {
   const { logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const currentPath = window.location.pathname.replace(/\/+$/, "");
   const studioName = profile?.studioName?.trim() || "Your Studio";
   const go = (path) => { if (path !== currentPath) window.location.assign(path); };
   const signOut = () => { logout(); window.location.replace("/auth"); };
-
+  const pendingBookings = bookings.filter((booking) => ["Pending", "AIRecommended", "AwaitingApproval"].includes(booking.status));
+  const notificationCount = pendingBookings.length;
   return <div className="studio-app-shell">
     <button className={`studio-drawer-shade${drawerOpen ? " open" : ""}`} type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />
     <aside className={`studio-sidebar${drawerOpen ? " open" : ""}`}>
@@ -68,7 +70,7 @@ export default function StudioLayout({ page, profile, children }) {
       <button className="studio-logout" type="button" onClick={signOut}><StudioIcon name="logout" /><span>Logout</span></button>
     </aside>
     <div className="studio-main-shell">
-      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><button className="studio-notification-button" type="button" aria-label="Notifications"><StudioIcon name="bell" /></button><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>Studio Owner</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
+      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><div className="studio-notification-wrap"><button className="studio-notification-button" type="button" aria-label={`${notificationCount} booking notifications`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><StudioIcon name="bell" />{notificationCount > 0 && <span className="studio-notification-count">{notificationCount > 9 ? "9+" : notificationCount}</span>}</button>{notificationsOpen && <section className="studio-notification-panel" aria-label="Booking notifications"><div><strong>Notifications</strong><button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Close notifications">×</button></div>{bookingsLoading ? <p>Checking booking activity…</p> : pendingBookings.length ? <><p>{pendingBookings.length} booking{pendingBookings.length === 1 ? "" : "s"} need{pendingBookings.length === 1 ? "s" : ""} your attention.</p><button type="button" onClick={() => window.location.assign("/studio/bookings")}>Review bookings <span aria-hidden="true">→</span></button></> : <p>You&apos;re all caught up. No booking actions need attention.</p>}</section>}</div><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>Studio Owner</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
       <main className={`studio-page studio-route-page studio-${page}-page`}>{children}</main>
     </div>
   </div>;
