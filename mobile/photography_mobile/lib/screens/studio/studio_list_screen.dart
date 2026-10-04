@@ -35,7 +35,19 @@ class _StudioListScreenState extends State<StudioListScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Studios')),
+    appBar: AppBar(
+      title: const Text('Studios'),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: IconButton(
+            onPressed: _retry,
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh studios',
+          ),
+        ),
+      ],
+    ),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(
@@ -45,22 +57,59 @@ class _StudioListScreenState extends State<StudioListScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Find the perfect studio for your special moments',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.secondary,
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      onChanged: (value) => setState(() => _query = value),
-                      decoration: const InputDecoration(
-                        hintText: 'Search studios...',
-                        prefixIcon: Icon(Icons.search),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                        blurRadius: 22,
+                        offset: const Offset(0, 12),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Find your perfect photography studio',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Browse trusted photographers for weddings, portraits and events.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      TextField(
+                        onChanged: (value) => setState(() => _query = value),
+                        decoration: InputDecoration(
+                          hintText: 'Search by studio, location or type',
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.95),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Expanded(
