@@ -4,7 +4,7 @@ An AI-powered platform that connects customers with photographers and supports p
 
 ## Team Components
 
-### Member 1
+### Member 1 (IT24102883-S.Jegajeevan)
 
 Photographer & Portfolio Management
 
@@ -13,7 +13,7 @@ Photographer & Portfolio Management
 - Availability
 - Photographer Matching Agent
 
-### Member 2
+### Member 2 (IT23296800- M.Thamilpiriyan)
 
 Package & Service Management
 
@@ -22,7 +22,7 @@ Package & Service Management
 - Pricing
 - Package Recommendation Agent
 
-### Member 3
+### Member 3 (IT24100704 - M.Mathusan)
 
 Booking & Scheduling Management
 
@@ -31,7 +31,7 @@ Booking & Scheduling Management
 - Calendar
 - Scheduling Agent
 
-### Member 4
+### Member 4 (It24100181 - P.Visakithan)
 
 Customer & Review Management
 
