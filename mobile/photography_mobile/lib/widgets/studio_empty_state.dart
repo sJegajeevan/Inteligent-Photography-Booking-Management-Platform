@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../services/studio_service.dart';
+class StudioEmptyState extends StatelessWidget {
+  const StudioEmptyState({
+    super.key,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
 
-class StudioError extends StatelessWidget {
-  const StudioError({super.key, required this.error, required this.onRetry});
-  final Object error;
-  final VoidCallback onRetry;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) => Center(
-    child: SingleChildScrollView(
+    child: Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -18,30 +25,28 @@ class StudioError extends StatelessWidget {
             width: 76,
             height: 76,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.errorContainer,
+              color: Theme.of(context).colorScheme.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.cloud_off_outlined,
-              size: 38,
-              color: Theme.of(context).colorScheme.onErrorContainer,
+              Icons.photo_library_outlined,
+              size: 36,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 20),
           Text(
-            'Unable to load studios.',
+            title,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
+            constraints: const BoxConstraints(maxWidth: 340),
             child: Text(
-              error is StudioApiException
-                  ? (error as StudioApiException).message
-                  : 'Something unexpected happened. Please try again.',
+              message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -49,12 +54,14 @@ class StudioError extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Retry'),
-          ),
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: onAction,
+              icon: const Icon(Icons.clear_rounded),
+              label: Text(actionLabel!),
+            ),
+          ],
         ],
       ),
     ),

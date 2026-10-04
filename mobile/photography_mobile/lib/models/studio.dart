@@ -47,11 +47,23 @@ class Studio {
     );
   }
 
-  bool matches(String query) => [
-    studioName,
-    location,
-    ...photographyTypes,
-  ].any((value) => value.toLowerCase().contains(query.trim().toLowerCase()));
+  bool matches(String query) {
+    final terms = _normalizeSearchText(query).split(' ')
+      ..removeWhere((term) => term.isEmpty);
+    if (terms.isEmpty) return true;
+
+    final searchableText = _normalizeSearchText([
+      studioName,
+      location,
+      description,
+      descriptionSummary,
+      ...photographyTypes,
+    ].join(' '));
+    return terms.every(searchableText.contains);
+  }
+
+  static String _normalizeSearchText(String value) =>
+      value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   String? get priceLabel {
     final price = startingPrice;
