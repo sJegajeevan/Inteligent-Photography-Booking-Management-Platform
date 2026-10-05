@@ -44,6 +44,8 @@ public sealed record AiWorkflowResponse(Guid Id, string Status, string CurrentSt
     public JourneyView? Journey { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AiWorkflowFailure? Failure { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AiWorkflowMonitoring? Monitoring { get; init; }
 }
 public sealed record AiWorkflowFailure(string Stage, string Code, string Message);
 public sealed record AiWorkflowPage(IReadOnlyList<AiWorkflowResponse> Items, int Page, int PageSize, bool HasMore);
@@ -51,3 +53,6 @@ public sealed record AiWorkflowDecisionResponse(Guid WorkflowId, int ProposalVer
 
 // Application result: status is explicit so HTTP adapters never infer a transition from an error string.
 public sealed record AiWorkflowDecisionResult(string? Error, AiWorkflowStatus? Status);
+
+public sealed record AiWorkflowMonitoring(int CustomerId, string CustomerName, string? StudioName, IReadOnlyList<AiWorkflowMonitoringEvent> Events);
+public sealed record AiWorkflowMonitoringEvent(Guid Id, string EventType, string Stage, bool Success, DateTime CreatedAt);

@@ -42,6 +42,7 @@ function AppContent() {
   }
   const studioPages = {
     "/studio/messages": "messages",
+    "/studio/notifications": "notifications",
     "/studio/dashboard": "dashboard",
     "/studio/profile": "profile",
     "/studio/availability": "availability",
@@ -71,9 +72,9 @@ function AppContent() {
     window.location.replace("/admin/dashboard");
     return null;
   }
-  const adminDetailMatch = path.match(/^\/admin\/(studios|customers|bookings)\/([^/]+)$/);
+  const adminDetailMatch = path.match(/^\/admin\/(studios|customers|bookings|workflows)\/([^/]+)$/);
   if (adminDetailMatch) {
-    const detailPage = { studios: "studio", customers: "customer", bookings: "booking" }[adminDetailMatch[1]];
+    const detailPage = { studios: "studio", customers: "customer", bookings: "booking", workflows: "workflow" }[adminDetailMatch[1]];
     return <ProtectedRoute allowedRoles={["Admin"]}><AdminDashboard page={detailPage} id={adminDetailMatch[2]} /></ProtectedRoute>;
   }
   const adminPages = {
@@ -83,6 +84,7 @@ function AppContent() {
     "/admin/bookings": "bookings",
     "/admin/reviews": "reviews",
     "/admin/reports": "reports",
+    "/admin/workflows": "workflows",
     "/admin/profile": "profile",
   };
   if (adminPages[path]) return <ProtectedRoute allowedRoles={["Admin"]}><AdminDashboard page={adminPages[path]} /></ProtectedRoute>;

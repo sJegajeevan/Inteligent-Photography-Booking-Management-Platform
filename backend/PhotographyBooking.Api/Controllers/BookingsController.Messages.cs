@@ -29,7 +29,8 @@ public partial class BookingsController
     {
         var actor = await GetActor();
         if (actor is null) return Forbid();
-        if (!await OwnedBookings(actor).AnyAsync(b => b.Id == bookingId))
+        var booking = await OwnedBookings(actor).AsNoTracking().SingleOrDefaultAsync(b => b.Id == bookingId);
+        if (booking is null)
             return NotFound(new { message = "Booking not found." });
         var text = request.Message?.Trim();
         if (string.IsNullOrEmpty(text) || request.Message!.Length > 1000)
@@ -38,6 +39,20 @@ public partial class BookingsController
         var message = new BookingMessage { BookingId = bookingId, SenderUserId = actor.Id,
             Message = text, SentAt = _clock.GetUtcNow().UtcDateTime };
         _context.BookingMessages.Add(message);
+        if (actor.Role == "Customer")
+        {
+            // Save the message and its notification together in one transaction.
+            _context.Notifications.Add(new Notification
+            {
+                CustomerId = actor.Id,
+                StudioId = booking.StudioId,
+                BookingId = booking.Id,
+                Title = "New customer message",
+                Message = text.Length > 160 ? text[..160] + "..." : text,
+                Type = "Message",
+                CreatedAt = message.SentAt
+            });
+        }
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetMessages), new { bookingId },
             new BookingMessageResponse(message.Id, bookingId, actor.Id, actor.FullName,

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -182,6 +183,10 @@ internal static class AiWorkflowApiChecks
             );
 
         builder.Logging.ClearProviders();
+        builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
+        builder.Services.Configure<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>(options => {
+            options.XmlRepository = new WorkflowXmlRepository(); options.XmlEncryptor = null;
+        });
 
         builder.WebHost.UseUrls(
             "http://127.0.0.1:0"
@@ -941,7 +946,7 @@ internal static class AiWorkflowApiChecks
             await Send(
                 "POST",
                 approve,
-                404,
+                403,
                 1,
                 "{\"proposalVersion\":1}"
             );
@@ -949,10 +954,16 @@ internal static class AiWorkflowApiChecks
             await Send(
                 "POST",
                 reject,
-                404,
+                403,
                 1,
                 "{\"proposalVersion\":1,\"reason\":\"No\"}"
             );
+
+            foreach (var deniedActor in new[] { 4, 5 })
+            {
+                await Send("POST", approve, 403, deniedActor, "{\"proposalVersion\":1}");
+                await Send("POST", reject, 403, deniedActor, "{\"proposalVersion\":1,\"reason\":\"No\"}");
+            }
 
             Check(
                 decisions == 0,
@@ -960,7 +971,7 @@ internal static class AiWorkflowApiChecks
             );
 
             foreach (
-                var actor in new[] { 3, 5 }
+                var actor in new[] { 3 }
             )
             {
                 decisionResult =
@@ -1091,7 +1102,7 @@ internal static class AiWorkflowApiChecks
                 )
                 in new[]
                 {
-                    ("Forbidden", 404),
+                    ("Forbidden", 403),
                     ("NotFound", 404),
                     ("StaleProposal", 409),
                     ("AlreadyDecided", 409),
@@ -1124,7 +1135,7 @@ internal static class AiWorkflowApiChecks
             await Send(
                 "POST",
                 approve,
-                404,
+                403,
                 4,
                 "{\"proposalVersion\":1}"
             );
@@ -1132,7 +1143,7 @@ internal static class AiWorkflowApiChecks
             await Send(
                 "POST",
                 reject,
-                404,
+                403,
                 4,
                 "{\"proposalVersion\":1,\"reason\":\"No\"}"
             );
@@ -1703,4 +1714,10 @@ internal sealed class TransportJourney(AiWorkflowService service) : IAiJourneySe
     public Task<AiWorkflowResponse> GetAsync(Guid id, ClaimsPrincipal user, CancellationToken ct) => service.GetAsync(id, user, ct);
     public Task<AiWorkflowResponse> ActAsync(Guid id, string action, JourneyAction request, ClaimsPrincipal user, CancellationToken ct)
         => throw new NotSupportedException();
+}
+
+sealed class WorkflowXmlRepository : Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository {
+    private readonly List<System.Xml.Linq.XElement> elements = [];
+    public IReadOnlyCollection<System.Xml.Linq.XElement> GetAllElements() { lock (elements) return elements.Select(e => new System.Xml.Linq.XElement(e)).ToArray(); }
+    public void StoreElement(System.Xml.Linq.XElement element, string friendlyName) { lock (elements) elements.Add(new(element)); }
 }

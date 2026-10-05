@@ -1,0 +1,12 @@
+.studio-notifications { padding: 24px; }
+.studio-notification-item { padding: 20px; margin-top: 14px; border: 1px solid var(--border, #e7e8ef); border-radius: 12px; overflow-wrap: anywhere; }
+.studio-notification-item.unread { border-left: 4px solid var(--accent, #7854b8); background: #f6f2ff; }
+.studio-notification-item > div { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.studio-notification-item h3 { margin: 14px 0 8px; font-size: 16px; }
+.studio-notification-item p { white-space: pre-wrap; }
+.studio-notification-item time, .studio-notification-item span { font-size: 13px; color: var(--text-secondary, #686b7f); }
+.studio-notification-type { padding: 4px 10px; background: #eee7ff; border-radius: 20px; }
+.studio-notification-actions { margin-top: 14px; justify-content: space-between; }
+.studio-notification-actions a { color: #6044aa; }
+.studio-notification-button { position: relative; }
+.studio-notification-count { position: absolute; top: -6px; right: -8px; min-width: 20px; padding: 2px 4px; border-radius: 12px; background: #7854b8; color: white; font-size: 11px; }

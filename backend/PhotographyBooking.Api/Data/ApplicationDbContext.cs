@@ -54,6 +54,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(n => n.Title).HasMaxLength(160).IsRequired();
             entity.Property(n => n.Message).HasMaxLength(1000).IsRequired();
             entity.Property(n => n.Type).HasMaxLength(60).IsRequired();
+            entity.HasIndex(n => new { n.StudioId, n.CreatedAt });
+            entity.HasIndex(n => new { n.StudioId, n.IsRead });
+            entity.HasOne(n => n.Studio).WithMany().HasForeignKey(n => n.StudioId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(n => new { n.CustomerId, n.CreatedAt });
             entity.HasIndex(n => new { n.CustomerId, n.IsRead });
             entity.HasOne(n => n.Customer).WithMany().HasForeignKey(n => n.CustomerId)

@@ -62,6 +62,7 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows, IAiJourne
         );
 
     [HttpPost("{workflowId}/approve")]
+    [Authorize(Roles = "Studio")]
     public Task<IActionResult> Approve(
         [FromRoute] Guid workflowId,
         [FromBody] ApproveAiWorkflowRequest request,
@@ -77,6 +78,7 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows, IAiJourne
         );
 
     [HttpPost("{workflowId}/reject")]
+    [Authorize(Roles = "Studio")]
     public Task<IActionResult> Reject(
         [FromRoute] Guid workflowId,
         [FromBody] RejectAiWorkflowRequest request,
@@ -133,8 +135,8 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows, IAiJourne
 
         return result.Error switch
         {
-            "Forbidden" or "NotFound" =>
-                Error(404, "not_found"),
+            "Forbidden" => Error(403, "forbidden"),
+            "NotFound" => Error(404, "not_found"),
 
             "InvalidDecision"
                 or "ReasonTooLong"
@@ -217,6 +219,7 @@ public sealed class AiWorkflowsController(AiWorkflowService workflows, IAiJourne
                         "unauthenticated"
                     ),
 
+                "forbidden" => Error(403, "forbidden"),
                 "not_found" =>
                     Error(
                         404,

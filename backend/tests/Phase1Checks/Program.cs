@@ -13,6 +13,13 @@ if (args.Contains("--ai-live-checks"))
     return;
 }
 
+if (args.Contains("--approval-checks"))
+{
+    Console.WriteLine($"Passed {await ProposalPublicationChecks.RunAsync()} canonical publication/approval foundation checks.");
+    Console.WriteLine($"Passed {await AiWorkflowApiChecks.RunAsync()} workflow API/service checks.");
+    return;
+}
+
 var count = 0;
 void Check(bool value, string name)
 {

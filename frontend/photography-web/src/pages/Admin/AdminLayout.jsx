@@ -8,10 +8,11 @@ const navigation = [
   ["/admin/customers", "Customers", "◎"],
   ["/admin/bookings", "Bookings", "□"],
   ["/admin/reviews", "Reviews", "★"],
+  ["/admin/workflows", "AI workflows", "?"],
   ["/admin/reports", "Reports", "◒"],
 ];
 
-const titles = { dashboard: "Platform overview", studios: "Studio management", customers: "Customer management", bookings: "Booking monitoring", reviews: "Review management", reports: "Platform reports", profile: "Admin profile" };
+const titles = { dashboard: "Platform overview", studios: "Studio monitoring", customers: "Customer monitoring", bookings: "Booking monitoring", reviews: "Review monitoring", reports: "Platform reports", profile: "Admin profile", workflows: "AI workflow monitoring" };
 
 export default function AdminLayout({ page, children }) {
   const { user, logout } = useAuth();

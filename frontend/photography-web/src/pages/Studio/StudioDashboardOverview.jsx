@@ -10,6 +10,7 @@ const dateValue = (value) => typeof value === "string" ? value.slice(0, 10) : ""
 function localToday() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; }
 const formatDate = (value) => dateFormatter.format(new Date(`${dateValue(value)}T00:00:00Z`));
 function formatTime(value) { if (!/^\d{2}:\d{2}/.test(value || "")) return "Not set"; const [h, m] = value.split(":").map(Number); return timeFormatter.format(new Date(Date.UTC(2000, 0, 1, h, m))); }
+const monthFormatter = new Intl.DateTimeFormat("en-LK", { month: "long", year: "numeric" });
 const go = (path) => window.location.assign(path);
 
 function ImageAvatar({ profile, failedLogoUrl, onLogoError }) {
@@ -48,12 +49,17 @@ export default function StudioDashboardOverview(props) {
     ["calendar", "green", "Availability", availabilityLoading, availabilityError, availabilityItems.length, "Schedule records"],
     ["profile", "amber", "Profile Completion", profileLoading, profileError, `${profileCompletion}%`, "Studio details completed"],
   ];
-  const actions = [
-    ["portfolio", "Add New Portfolio", "Showcase a recent photography project", "/studio/portfolio"],
-    ["services", "Add New Service", "Create a new client package", "/studio/services"],
-    ["calendar", "Manage Availability", "Update your booking schedule", "/studio/availability"],
-    ["profile", "View Studio Profile", "Review your public studio details", "/studio/profile"],
-  ];
+  const calendarDate = new Date();
+  const calendarYear = calendarDate.getFullYear();
+  const calendarMonth = calendarDate.getMonth();
+  const firstWeekday = new Date(calendarYear, calendarMonth, 1).getDay();
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const programmeDates = new Set(bookingItems.map((item) => dateValue(item.bookingDate)).filter((date) => date.startsWith(`${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}-`)));
+  const calendarDays = Array.from({ length: firstWeekday + daysInMonth }, (_, index) => index < firstWeekday ? null : index - firstWeekday + 1);
+  const upcomingProgrammes = bookingItems
+    .filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(dateValue(item.bookingDate)) && dateValue(item.bookingDate) >= localToday())
+    .sort((a, b) => dateValue(a.bookingDate).localeCompare(dateValue(b.bookingDate)))
+    .slice(0, 3);
 
   return <>
     <StudioPhotographyHero profile={profile} profileLoading={profileLoading} profileError={profileError} portfolio={portfolio} portfolioLoading={portfolioLoading} portfolioError={portfolioError} />
@@ -65,7 +71,15 @@ export default function StudioDashboardOverview(props) {
     </section>
     <section className="dashboard-two-column">
       <Card className="dashboard-panel"><div className="dashboard-panel-heading portfolio-heading"><div><h3>Recent Portfolio</h3><p>Your latest published work</p></div><div><button type="button" onClick={() => go("/studio/portfolio")}>View All</button><button className="dashboard-primary-button" type="button" onClick={() => go("/studio/portfolio")}>+ Add Project</button></div></div>{portfolioLoading ? <p className="dashboard-empty">Loading portfolio…</p> : portfolioError ? <p className="dashboard-empty dashboard-error">{portfolioError}</p> : recentPortfolio.length ? <div className="recent-portfolio-grid">{recentPortfolio.map((item, index) => { const cover = item.images?.[0]?.imageUrl || item.imageUrl; return <button type="button" key={item.id ?? index} onClick={() => go("/studio/portfolio")}><span>{cover ? <img src={resolvePortfolioImageUrl(cover)} alt="" /> : <StudioIcon name="portfolio" />}</span><strong>{item.title || "Untitled"}</strong><small>{item.category || "Uncategorized"}</small></button>; })}</div> : <p className="dashboard-empty">No portfolio items yet.</p>}</Card>
-      <Card className="dashboard-panel quick-actions-panel"><div className="dashboard-panel-heading"><div><h3>Quick Actions</h3><p>Shortcuts to manage your studio</p></div></div><div className="dashboard-action-list">{actions.map(([icon, title, description, path]) => <button type="button" key={title} onClick={() => go(path)}><span className="action-icon"><StudioIcon name={icon} /></span><span><strong>{title}</strong><small>{description}</small></span><StudioIcon name="arrow" /></button>)}</div></Card>
+      <Card className="dashboard-panel programmes-calendar-panel">
+        <div className="dashboard-panel-heading"><div><h3>Upcoming Studio Programmes</h3><p>Your confirmed and pending sessions</p></div><button type="button" onClick={() => go("/studio/bookings")}>View Bookings</button></div>
+        <div className="programmes-calendar">
+          <div className="programmes-calendar-title"><strong>{monthFormatter.format(calendarDate)}</strong><span><i /> Programme scheduled</span></div>
+          <div className="calendar-weekdays">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <span key={day}>{day}</span>)}</div>
+          <div className="calendar-grid" aria-label={`${monthFormatter.format(calendarDate)} programme calendar`}>{calendarDays.map((day, index) => day ? <span className={`${day === calendarDate.getDate() ? "today " : ""}${programmeDates.has(`${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`) ? "has-programme" : ""}`} key={day}>{day}</span> : <span className="calendar-empty" key={`empty-${index}`} />)}</div>
+        </div>
+        <div className="programme-list">{upcomingProgrammes.length ? upcomingProgrammes.map((item, index) => <div key={item.id ?? `${item.bookingDate}-${index}`}><span className="programme-date"><strong>{new Date(`${dateValue(item.bookingDate)}T00:00:00Z`).getUTCDate()}</strong><small>{new Intl.DateTimeFormat("en-LK", { month: "short", timeZone: "UTC" }).format(new Date(`${dateValue(item.bookingDate)}T00:00:00Z`))}</small></span><span><strong>{item.packageName || item.serviceName || item.title || "Studio programme"}</strong><small>{formatTime(item.startTime) === "Not set" ? "Scheduled session" : formatTime(item.startTime)}</small></span><em className={item.status === "Confirmed" ? "confirmed" : "pending"}>{item.status === "Confirmed" ? "Confirmed" : "Pending"}</em></div>) : <p className="dashboard-empty">No upcoming studio programmes.</p>}</div>
+      </Card>
     </section>
   </>;
 }

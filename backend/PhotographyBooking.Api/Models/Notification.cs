@@ -4,6 +4,9 @@ public class Notification
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public int CustomerId { get; set; }
+    // Null means a customer notification; otherwise this row belongs to the studio.
+    public Guid? StudioId { get; set; }
+    public Studio? Studio { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;

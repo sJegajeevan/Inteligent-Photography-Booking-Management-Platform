@@ -55,6 +55,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 builder.Services.AddControllers().AddApplicationPart(typeof(BookingsController).Assembly).AddControllersAsServices();
+builder.Services.AddSingleton<ApplicationDbContext>(db);
 builder.Services.AddTransient(_ => new BookingsController(db, null!, null!, null!, clock));
 await using var app = builder.Build();
 app.UseAuthentication();
@@ -98,9 +99,29 @@ foreach (var (id, role) in new[] { (3, "Customer"), (4, "Studio") }) {
     Check((await client.PostAsJsonAsync(path, new { message = "intrusion" })).StatusCode == HttpStatusCode.NotFound, role + " cross-owner write denied");
 }
 Actor(2, "Studio");
+var notificationPath = "/api/studio/notifications";
+var notifications = (await client.GetFromJsonAsync<List<System.Text.Json.JsonElement>>(notificationPath))!;
+Check(notifications.Count == 2, "customer messages create studio notifications");
+Check(notifications.All(n => n.GetProperty("customerName").GetString() == "Customer One" && n.GetProperty("type").GetString() == "Message" && !n.GetProperty("isRead").GetBoolean()), "notification contains customer, type and unread status");
+Check(notifications.Any(n => n.GetProperty("message").GetString() == "Hello studio"), "message preview saved");
+Check(notifications.All(n => n.GetProperty("message").GetString()!.Length <= 163), "long previews shortened");
+var notificationId = notifications[0].GetProperty("id").GetGuid();
+Actor(4, "Studio");
+Check((await client.GetFromJsonAsync<List<System.Text.Json.JsonElement>>(notificationPath))!.Count == 0, "other studio cannot list notifications");
+Check((await client.PatchAsync($"{notificationPath}/{notificationId}/read", null)).StatusCode == HttpStatusCode.NotFound, "other studio cannot mark read");
+Actor(1, "Customer");
+Check((await client.GetAsync(notificationPath)).StatusCode == HttpStatusCode.Forbidden, "customer denied studio notifications");
+Check((await client.GetFromJsonAsync<List<System.Text.Json.JsonElement>>("/api/customer/notifications"))!.Count == 0, "studio rows do not leak to customer feed");
+Check((await client.PatchAsync($"/api/customer/notifications/{notificationId}/read", null)).StatusCode == HttpStatusCode.NotFound, "customer cannot alter studio read state");
+Actor(2, "Studio");
+Check((await client.PatchAsync($"{notificationPath}/{notificationId}/read", null)).StatusCode == HttpStatusCode.NoContent, "owner marks read");
+Check((await client.PatchAsync($"{notificationPath}/{notificationId}/read", null)).StatusCode == HttpStatusCode.NoContent, "mark read is idempotent");
+var count = await client.GetFromJsonAsync<System.Text.Json.JsonElement>($"{notificationPath}/unread-count");
+Check(count.GetProperty("unreadCount").GetInt32() == 1, "unread count updates");
 Check((await client.GetAsync(path)).StatusCode == HttpStatusCode.OK, "owner studio can read");
 clock.Now = now.AddMinutes(1);
 Check((await client.PostAsJsonAsync(path, new { message = "Studio reply" })).StatusCode == HttpStatusCode.Created, "owner studio can reply");
+Check(await db.Notifications.CountAsync() == 2, "studio reply does not create studio notification");
 // Insert an older row last, verifying chronological order rather than insertion order.
 db.BookingMessages.Add(new BookingMessage { BookingId = booking.Id, SenderUserId = 1, Message = "Earlier", SentAt = now.AddMinutes(-1).UtcDateTime });
 await db.SaveChangesAsync();
@@ -129,7 +150,7 @@ sealed class MessageClock(DateTimeOffset now) : TimeProvider {
 sealed class MessageTestDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options) {
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
-        Type[] included = [typeof(User), typeof(Studio), typeof(PhotographyPackage), typeof(Booking), typeof(BookingMessage)];
+        Type[] included = [typeof(User), typeof(Studio), typeof(PhotographyPackage), typeof(Booking), typeof(BookingMessage), typeof(Notification)];
         foreach (var entity in builder.Model.GetEntityTypes().ToList())
             if (!included.Contains(entity.ClrType)) builder.Ignore(entity.ClrType);
     }

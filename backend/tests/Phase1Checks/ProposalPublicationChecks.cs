@@ -144,7 +144,7 @@ internal static class ProposalPublicationChecks
         Check((await canonical.RevalidateApprovalAsync(workflow)).ErrorCode == "invalid_workflow_state", "malformed stored JSON");
         workflow.FinalProposalJson = published;
         Check(AiWorkflowApprovalRules.CanReview("Studio", 1, 1) && !AiWorkflowApprovalRules.CanReview("Studio", 2, 1), "studio ownership");
-        Check(AiWorkflowApprovalRules.CanReview("Admin", 2, 1) && !AiWorkflowApprovalRules.CanReview("Customer", 1, 1), "admin/customer policies");
+        Check(!AiWorkflowApprovalRules.CanReview("Admin", 2, 1) && !AiWorkflowApprovalRules.CanReview("Customer", 1, 1), "admin/customer cannot approve");
         Check(AiWorkflowApprovalRules.Validate(workflow, 1, AiApprovalDecision.Rejected, "No", clock.Now.UtcDateTime) is null &&
             AiWorkflowApprovalRules.ResultingStatus(AiApprovalDecision.Rejected) == AiWorkflowStatus.Rejected, "rejection rules preserved");
         Check(AiWorkflowApprovalRules.Validate(workflow, 2, AiApprovalDecision.Approved, null, clock.Now.UtcDateTime) == "StaleProposal", "stale reviewer version");

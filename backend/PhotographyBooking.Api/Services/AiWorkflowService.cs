@@ -19,6 +19,7 @@ public sealed class AiWorkflowApiFailure(string code) : Exception(code)
 public sealed class AiWorkflowService
 {
     private readonly TimeProvider _clock;
+    private Func<Guid, CancellationToken, Task<IReadOnlyList<AiWorkflowMonitoringEvent>>>? _monitoringEvents;
 
     private readonly Func<int, CancellationToken, Task<User?>> _user;
 
@@ -108,6 +109,13 @@ public sealed class AiWorkflowService
         execution.ExecuteAsync
     )
     {
+        _monitoringEvents = async (id, ct) =>
+        {
+            var events = await db.AiWorkflowEvents.AsNoTracking().Where(e => e.WorkflowId == id)
+                .OrderByDescending(e => e.CreatedAt).ThenByDescending(e => e.Id).Take(50)
+                .Select(e => new AiWorkflowMonitoringEvent(e.Id, e.EventType, e.StepName, e.Success, e.CreatedAt)).ToListAsync(ct);
+            return events.Select(SafeMonitoringEvent).ToArray();
+        };
     }
 
     // Offline checks replace only database boundaries;
@@ -224,13 +232,16 @@ public sealed class AiWorkflowService
             );
     }
 
-    private static IQueryable<AiWorkflow> ReadProjection(
+    internal static IQueryable<AiWorkflow> ReadProjection(
         IQueryable<AiWorkflow> query
     ) =>
         query.Select(
             w => new AiWorkflow
             {
                 Id = w.Id,
+                CustomerId = w.CustomerId,
+                Customer = new User { Id = w.CustomerId, FullName = w.Customer.FullName },
+                SelectedStudio = w.SelectedStudio == null ? null : new Studio { Id = w.SelectedStudio.Id, UserId = w.SelectedStudio.UserId, StudioName = w.SelectedStudio.StudioName },
 
                 Status = w.Status,
 
@@ -517,9 +528,8 @@ public sealed class AiWorkflowService
                 "not_found"
             );
 
-        return ToResponse(
-            workflow
-        );
+        var response = ToResponse(workflow);
+        return actor.Role == "Admin" ? response with { Monitoring = Monitoring(workflow) with { Events = _monitoringEvents is null ? [] : await _monitoringEvents(id, ct) } } : response;
     }
 
     public async Task<AiWorkflowPage> ListAsync(
@@ -546,7 +556,7 @@ public sealed class AiWorkflowService
         return new(
             workflows
                 .Take(request.PageSize)
-                .Select(ToResponse)
+                .Select(workflow => actor.Role == "Admin" ? ToResponse(workflow) with { Monitoring = Monitoring(workflow) } : ToResponse(workflow))
                 .ToArray(),
 
             request.Page,
@@ -573,17 +583,7 @@ public sealed class AiWorkflowService
                 ct
             );
 
-        if (
-            actor.Role is not (
-                "Studio"
-                or "Admin"
-            )
-        )
-        {
-            throw new AiWorkflowApiFailure(
-                "not_found"
-            );
-        }
+        if (actor.Role != "Studio") throw new AiWorkflowApiFailure("forbidden");
 
         if (
             id == Guid.Empty
@@ -613,6 +613,8 @@ public sealed class AiWorkflowService
                 "invalid_request"
             );
         }
+
+        if (await _get(actor, id, ct) is null) throw new AiWorkflowApiFailure("forbidden");
 
         // The approval service repeats DB
         // role/ownership verification under
@@ -704,6 +706,18 @@ public sealed class AiWorkflowService
             workflow.ExpiresAt
         ) { Failure = ReadFailure(workflow) };
     }
+
+    internal static AiWorkflowMonitoringEvent SafeMonitoringEvent(AiWorkflowMonitoringEvent item) => item with
+    {
+        EventType = item.EventType is "JourneyV1" or "WorkflowSubmitted" or "JourneySubmittedForApproval" or
+            "WorkflowExecutionStateChanged" or "ProposalRevalidationRequired" or "ProposalPublished" or
+            "ApprovalRevalidationRequired" or "WorkflowBookingCreated" or "HumanDecisionRecorded" ? item.EventType : "WorkflowEvent",
+        Stage = item.Stage is "Submitted" or "StudioMatching" or "PackageRecommendation" or "Scheduling" or
+            "Validation" or "HumanApproval" or "Completed" ? item.Stage : "Execution"
+    };
+
+    private static AiWorkflowMonitoring Monitoring(AiWorkflow workflow) =>
+        new(workflow.CustomerId, workflow.Customer?.FullName ?? "Customer", workflow.SelectedStudio?.StudioName, []);
 
     private static AiWorkflowFailure? ReadFailure(AiWorkflow workflow)
     {

@@ -478,3 +478,5 @@ backend/PhotographyBooking.Api/wwwroot/uploads/
 
 # Local PostgreSQL database backups
 *.backup
+
+agentic-ai/.pytest-tmp/

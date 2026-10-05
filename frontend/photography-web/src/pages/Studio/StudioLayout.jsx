@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getStudioUnreadCount } from "../../services/studioNotificationsService";
+import "./StudioNotifications.css";
 import { useAuth } from "../../context/useAuth";
 
 const navigation = [
-  ["/studio/messages", "Messages", "messages"],
   ["/studio/dashboard", "Dashboard", "dashboard"],
   ["/studio/profile", "Profile", "profile"],
   ["/studio/availability", "Availability", "calendar"],
@@ -14,9 +15,12 @@ const navigation = [
   ["/studio/customers", "Customers", "customers"],
   ["/studio/reviews", "Reviews", "reviews"],
   ["/studio/ai-workflows", "AI Recommendations", "reviews"],
+  ["/studio/messages", "Messages", "messages"],
+  ["/studio/notifications", "Notifications", "bell"],
 ];
 
 const titles = {
+  notifications: "Notifications",
   messages: "Messages",
   customers: "Customers",
   customerDetails: "Customer Details",
@@ -67,7 +71,29 @@ function StudioAvatar({ profile }) {
 }
 
 export default function StudioLayout({ page, profile, profileLoading, children }) {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    let busy = false;
+    async function loadCount() {
+      if (busy) return;
+      busy = true;
+      try {
+        const result = await getStudioUnreadCount(token);
+        if (active) setUnreadCount(result.unreadCount);
+      } catch { /* The notifications page displays errors and allows retrying. */ }
+      finally { busy = false; }
+    }
+    const initial = setTimeout(loadCount, 0);
+    const timer = setInterval(loadCount, 30000);
+    window.addEventListener("studio-notifications-read", loadCount);
+    return () => {
+      active = false;
+      clearTimeout(initial); clearInterval(timer);
+      window.removeEventListener("studio-notifications-read", loadCount);
+    };
+  }, [token]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const currentPath = window.location.pathname.replace(/\/+$/, "");
   const isActive = (path) => currentPath === path ||
@@ -85,7 +111,7 @@ export default function StudioLayout({ page, profile, profileLoading, children }
       <button className="studio-logout" type="button" onClick={signOut}><StudioIcon name="logout" /><span>Logout</span></button>
     </aside>
     <div className="studio-main-shell">
-      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><button className="studio-notification-button" type="button" aria-label="Notifications"><StudioIcon name="bell" /></button><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>{accountRole}</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
+      <header className="studio-top-header"><div className="studio-header-title"><button className="studio-menu-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="Open navigation"><StudioIcon name="menu" /></button><h1>{titles[page]}</h1></div><div className="studio-header-account"><button className="studio-notification-button" type="button" aria-label={`Notifications, ${unreadCount} unread`} onClick={() => go("/studio/notifications")}><StudioIcon name="bell" />{unreadCount > 0 && <span className="studio-notification-count">{unreadCount > 99 ? "99+" : unreadCount}</span>}</button><StudioAvatar profile={profile} /><span className="studio-account-text"><strong>{studioName}</strong><small>{accountRole}</small></span><span className="studio-account-chevron" aria-hidden="true">⌄</span></div></header>
       <main className={`studio-page studio-route-page studio-${page}-page`}>{children}</main>
     </div>
   </div>;

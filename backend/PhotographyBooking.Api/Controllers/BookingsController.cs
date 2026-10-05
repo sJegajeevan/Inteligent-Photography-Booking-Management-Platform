@@ -158,6 +158,16 @@ public partial class BookingsController : ControllerBase
             Message = $"Your booking #{booking.Id} has been created and is pending confirmation.",
             Type = "BookingCreated"
         });
+        _context.Notifications.Add(new Notification
+        {
+            CustomerId = actor.Id,
+            StudioId = booking.StudioId,
+            BookingId = booking.Id,
+            Title = "New booking",
+            Message = $"{actor.FullName} booked {selectedPackage.Name} for {booking.BookingDate:yyyy-MM-dd}, {booking.StartTime:HH:mm} to {booking.EndTime:HH:mm} (booking #{booking.Id}).",
+            Type = "Booking",
+            CreatedAt = _clock.GetUtcNow().UtcDateTime
+        });
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
 

@@ -34,6 +34,7 @@ public record AdminStudioDetail(
     int PackageCount,
     int AvailabilityCount,
     int BookingCount,
+    int ReviewCount,
     double? AverageRating,
     IReadOnlyList<AdminNamedItem> Services,
     IReadOnlyList<AdminNamedItem> Packages);
@@ -96,4 +97,35 @@ public record AdminReportsResponse(
     int TotalStudios,
     int TotalCustomers);
 
-public record AdminCountByName(string Name, int Count);
+public record AdminCountByName(Guid Id, string Name, int Count);
+
+public record AdminPage<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount, int TotalPages);
+
+public class AdminCollectionQuery : System.ComponentModel.DataAnnotations.IValidatableObject
+{
+    [System.ComponentModel.DataAnnotations.Range(1, 10000)] public int Page { get; init; } = 1;
+    [System.ComponentModel.DataAnnotations.Range(10, 100)] public int PageSize { get; init; } = 10;
+    [System.ComponentModel.DataAnnotations.StringLength(200)] public string? Search { get; init; }
+    public virtual IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext context) => [];
+}
+
+public sealed class AdminBookingQuery : AdminCollectionQuery
+{
+    public PhotographyBooking.Api.Models.BookingStatus? Status { get; init; }
+    public Guid? StudioId { get; init; }
+    public int? CustomerId { get; init; }
+    public DateOnly? FromDate { get; init; }
+    public DateOnly? ToDate { get; init; }
+    public override IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Validate(System.ComponentModel.DataAnnotations.ValidationContext context)
+    {
+        if (Status.HasValue && !Enum.IsDefined(Status.Value)) yield return new("Invalid booking status.", [nameof(Status)]);
+        if (StudioId == Guid.Empty) yield return new("Invalid studio ID.", [nameof(StudioId)]);
+        if (CustomerId <= 0) yield return new("Invalid customer ID.", [nameof(CustomerId)]);
+        if (FromDate > ToDate) yield return new("From date must not exceed to date.", [nameof(FromDate), nameof(ToDate)]);
+    }
+}
+
+public sealed class AdminReviewQuery : AdminCollectionQuery
+{
+    [System.ComponentModel.DataAnnotations.Range(1, 5)] public int? Rating { get; init; }
+}
