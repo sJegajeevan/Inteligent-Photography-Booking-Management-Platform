@@ -49,3 +49,23 @@ Customer & Review Management
 - Flutter
 - Python Agentic AI
 - Google Maps API
+
+
+## Agentic AI Deployment
+Deployment URL:   http://snapsync-agentic-ai.ap-southeast-2.elasticbeanstalk.com
+Health check:    http://snapsync-agentic-ai.ap-southeast-2.elasticbeanstalk.com/health
+
+## Backend Deployment
+Deployed Backend: snapsync-backend.ap-southeast-2.elasticbeanstalk.com
+
+                  Swagger API Documentation:
+            http://snapsync-backend.ap-southeast-2.elasticbeanstalk.com/swagger/index.html
+
+ ## React Deployment
+  Live React URL:
+SnapSync AI – AWS Amplify
+Authentication page:
+SnapSync AI Login
+
+
+
