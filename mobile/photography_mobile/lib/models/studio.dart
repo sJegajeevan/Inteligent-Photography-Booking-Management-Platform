@@ -9,12 +9,14 @@ class Studio {
     this.coverImageUrl,
     this.photographyTypes = const [],
     this.startingPrice,
+    this.distanceKm,
   });
 
   final String id, studioName, location, description, descriptionSummary;
   final String? profileImageUrl, coverImageUrl;
   final List<String> photographyTypes;
   final double? startingPrice;
+  final double? distanceKm;
 
   factory Studio.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
@@ -23,8 +25,12 @@ class Studio {
     }
     String text(String key) => json[key] is String ? json[key] as String : '';
     final price = json['startingPrice'];
+    final distance = json['distanceKm'];
     return Studio(
       id: id,
+      distanceKm: distance is num && distance.isFinite && distance >= 0
+          ? distance.toDouble()
+          : null,
       studioName: text('studioName'),
       location: text('location'),
       description: text('description'),
@@ -47,23 +53,11 @@ class Studio {
     );
   }
 
-  bool matches(String query) {
-    final terms = _normalizeSearchText(query).split(' ')
-      ..removeWhere((term) => term.isEmpty);
-    if (terms.isEmpty) return true;
-
-    final searchableText = _normalizeSearchText([
-      studioName,
-      location,
-      description,
-      descriptionSummary,
-      ...photographyTypes,
-    ].join(' '));
-    return terms.every(searchableText.contains);
-  }
-
-  static String _normalizeSearchText(String value) =>
-      value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  bool matches(String query) => [
+    studioName,
+    location,
+    ...photographyTypes,
+  ].any((value) => value.toLowerCase().contains(query.trim().toLowerCase()));
 
   String? get priceLabel {
     final price = startingPrice;

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../models/studio.dart';
 import '../../services/studio_service.dart';
+import '../../services/location_service.dart';
 import '../../widgets/studio_card.dart';
-import '../../widgets/studio_empty_state.dart';
 import '../../widgets/studio_error.dart';
 import 'studio_detail_screen.dart';
 
 class StudioListScreen extends StatefulWidget {
-  const StudioListScreen({super.key, this.service});
+  const StudioListScreen({super.key, this.service, this.locationService});
   final StudioService? service;
-
+  final LocationService? locationService;
   @override
   State<StudioListScreen> createState() => _StudioListScreenState();
 }
@@ -18,9 +18,47 @@ class StudioListScreen extends StatefulWidget {
 class _StudioListScreenState extends State<StudioListScreen> {
   late final StudioService _service = widget.service ?? StudioService();
   late Future<List<Studio>> _studios;
-  final TextEditingController _searchController = TextEditingController();
   String _query = '';
-  String? _selectedType;
+  bool _findingNearby = false;
+  bool _nearby = false;
+  int _requestId = 0;
+  String? _locationMessage;
+
+  Future<void> _nearMe() async {
+    final requestId = ++_requestId;
+    setState(() {
+      _findingNearby = true;
+      _locationMessage = null;
+    });
+    try {
+      final position = await (widget.locationService ?? LocationService())
+          .getCurrentLocation();
+      if (!mounted || requestId != _requestId) return;
+      final studios = await _service.getNearbyStudios(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _nearby = true;
+        _studios = Future.value(studios);
+      });
+    } catch (error) {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _nearby = false;
+        _studios = _service.getStudios();
+        _locationMessage =
+            error is LocationFailure || error is StudioApiException
+            ? error.toString()
+            : 'Unable to find nearby studios. You can still browse all studios.';
+      });
+    } finally {
+      if (mounted && requestId == _requestId) {
+        setState(() => _findingNearby = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -30,46 +68,28 @@ class _StudioListScreenState extends State<StudioListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
     if (widget.service == null) _service.close();
     super.dispose();
   }
 
   void _retry() => setState(() {
+    ++_requestId;
+    _findingNearby = false;
+    _nearby = false;
+    _locationMessage = null;
     _studios = _service.getStudios();
   });
 
-  void _clearFilters() {
-    _searchController.clear();
-    setState(() {
-      _query = '';
-      _selectedType = null;
-    });
-  }
-
-  bool _matchesType(Studio studio) {
-    final selectedType = _selectedType;
-    return selectedType == null ||
-        studio.photographyTypes.any(
-          (type) => type.toLowerCase() == selectedType.toLowerCase(),
-        );
+  bool _matchesSearch(Studio studio) {
+    final query = _query.trim().toLowerCase();
+    if (query.isEmpty) return true;
+    return studio.studioName.toLowerCase().contains(query) ||
+        studio.location.toLowerCase().contains(query);
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Studios'),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: IconButton(
-            onPressed: _retry,
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh studios',
-          ),
-        ),
-      ],
-    ),
+    appBar: AppBar(title: const Text('Browse Studios')),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(
@@ -78,80 +98,56 @@ class _StudioListScreenState extends State<StudioListScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.secondary,
-                      ],
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Find the perfect studio for your special moments',
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).colorScheme.primary
-                            .withValues(alpha: 0.22),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Find your perfect photography studio',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              height: 1.15,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Browse photographers for weddings, portraits and events.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.94),
-                          height: 1.45,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Semantics(
-                        label: 'Search studios by name, location, description or photography type',
-                        textField: true,
-                        child: TextField(
-                          controller: _searchController,
-                          textInputAction: TextInputAction.search,
-                          onChanged: (value) => setState(() => _query = value),
-                          decoration: InputDecoration(
-                            hintText: 'Name, location or photography type',
-                            prefixIcon: const Icon(Icons.search_rounded),
-                            suffixIcon: _query.isEmpty
-                                ? null
-                                : IconButton(
-                                    tooltip: 'Clear search',
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(() => _query = '');
-                                    },
-                                    icon: const Icon(Icons.close_rounded),
-                                  ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: _findingNearby ? null : _nearMe,
+                          icon: const Icon(Icons.near_me),
+                          label: Text(
+                            _findingNearby
+                                ? 'Finding nearby studios...'
+                                : 'Near Me',
                           ),
                         ),
+                        if (_nearby || _findingNearby)
+                          TextButton(
+                            onPressed: _retry,
+                            child: const Text('All studios'),
+                          ),
+                      ],
+                    ),
+                    if (_nearby)
+                      const Text(
+                        'Within 50 km. Nearest first. Straight-line distances.',
                       ),
-                    ],
-                  ),
+                    if (_locationMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _locationMessage!,
+                          semanticsLabel: _locationMessage,
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      onChanged: (value) => setState(() => _query = value),
+                      decoration: const InputDecoration(
+                        hintText: 'Search by studio name or location',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -159,12 +155,7 @@ class _StudioListScreenState extends State<StudioListScreen> {
                   future: _studios,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
-                      return Center(
-                        child: Semantics(
-                          label: 'Loading studios',
-                          child: const CircularProgressIndicator(),
-                        ),
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
                       return StudioError(
@@ -172,128 +163,39 @@ class _StudioListScreenState extends State<StudioListScreen> {
                         onRetry: _retry,
                       );
                     }
-
                     final studios = snapshot.data!;
                     if (studios.isEmpty) {
-                      return const StudioEmptyState(
-                        title: 'No studios available yet.',
-                        message: 'New studios will appear here when photographers publish their profiles.',
+                      return Center(
+                        child: Text(
+                          _nearby
+                              ? 'No studios within 50 km. Try All studios.'
+                              : 'No studios available yet.',
+                        ),
                       );
                     }
-
-                    final types =
-                        studios
-                            .expand((studio) => studio.photographyTypes)
-                            .map((type) => type.trim())
-                            .where((type) => type.isNotEmpty)
-                            .toSet()
-                            .toList()
-                          ..sort(
-                            (a, b) =>
-                                a.toLowerCase().compareTo(b.toLowerCase()),
-                          );
-                    final filtered = studios
-                        .where((studio) => studio.matches(_query))
-                        .where(_matchesType)
-                        .toList();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (types.isNotEmpty)
-                          SizedBox(
-                            height: 48,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
+                    final filtered = studios.where(_matchesSearch).toList();
+                    if (filtered.isEmpty) {
+                      return const Center(
+                        child: Text('No studios match your search.'),
+                      );
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final studio = filtered[index];
+                        return StudioCard(
+                          studio: studio,
+                          onView: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => StudioDetailScreen(
+                                studioId: studio.id,
+                                service: _service,
                               ),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: Semantics(
-                                    label: 'Show all photography types',
-                                    selected: _selectedType == null,
-                                    child: ChoiceChip(
-                                      label: const Text('All types'),
-                                      selected: _selectedType == null,
-                                      onSelected: (_) =>
-                                          setState(() => _selectedType = null),
-                                    ),
-                                  ),
-                                ),
-                                for (final type in types)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: Semantics(
-                                      label: 'Filter studios by $type',
-                                      selected:
-                                          _selectedType?.toLowerCase() ==
-                                          type.toLowerCase(),
-                                      child: ChoiceChip(
-                                        label: Text(type),
-                                        selected:
-                                            _selectedType?.toLowerCase() ==
-                                            type.toLowerCase(),
-                                        onSelected: (selected) => setState(
-                                          () => _selectedType = selected
-                                              ? type
-                                              : null,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
                             ),
                           ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                          child: Semantics(
-                            liveRegion: true,
-                            child: Text(
-                              '${filtered.length} ${filtered.length == 1 ? 'studio' : 'studios'} found',
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: filtered.isEmpty
-                              ? StudioEmptyState(
-                                  title: 'No studios match your search.',
-                                  message: 'Try another name or location, or clear your search and filters.',
-                                  actionLabel: 'Clear search and filters',
-                                  onAction: _clearFilters,
-                                )
-                              : ListView.builder(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    20,
-                                    0,
-                                    20,
-                                    20,
-                                  ),
-                                  itemCount: filtered.length,
-                                  itemBuilder: (context, index) {
-                                    final studio = filtered[index];
-                                    return StudioCard(
-                                      studio: studio,
-                                      onView: () => Navigator.of(context).push(
-                                        MaterialPageRoute<void>(
-                                          builder: (_) => StudioDetailScreen(
-                                            studioId: studio.id,
-                                            service: _service,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
+                        );
+                      },
                     );
                   },
                 ),
