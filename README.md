@@ -31,14 +31,14 @@ Booking & Scheduling Management
 - Calendar
 - Scheduling Agent
 
-### Member 4 (It24100181 - P.Visakithan)
+### Member 4 (IT24100181 - P.Visakithan)
 
-Customer & Review Management
+Customer & Review Management & Mobile Application Testing (Flutter)
 
-- Customer management
-- Payment
-- Photo delivery
-- Reviews
+- Mobile Automated Testing (114 tests passed across 12 test files)
+- Customer Mobile Workflows, Booking Validation & Scheduling Testing
+- Flutter Unit & Widget Testing with Mock API (`MockClient`)
+- Customer management, Payment, Reviews, Photo delivery
 - Validation & Safety Agent
 
 ## Technology Stack
