@@ -1,5 +1,5 @@
+import BookingStatusBadge, { getBookingStatusDetails } from "../../components/booking/BookingStatusBadge";
 import { useCallback, useEffect, useState } from "react";
-import BookingStatusBadge from "../../components/booking/BookingStatusBadge";
 import { cancelBooking, getBooking, getBookingHistory, updateBookingStatus } from "../../services/bookingService";
 import { useAuth } from "../../context/useAuth";
 
@@ -85,6 +85,7 @@ export default function StudioBookingDetails({ bookingId }) {
   if (error) return <section className="booking-state booking-error"><strong>Unable to load this booking.</strong><p>{error}</p><button className="dashboard-primary-button" type="button" onClick={load}>Retry</button><button className="booking-link-button" type="button" onClick={() => window.location.assign("/studio/bookings")}>Back to bookings</button></section>;
 
   const availableActions = transitions[booking.status] || [];
+  const statusDetails = getBookingStatusDetails(booking.status);
   return <>
     <section className="studio-route-heading booking-route-heading"><div><button className="booking-back-link" type="button" onClick={() => window.location.assign("/studio/bookings")}>← All bookings</button><p className="studio-kicker">BOOKING #{booking.id}</p><h1>Booking details</h1><p>Review the complete request and status activity.</p></div><BookingStatusBadge status={booking.status} /></section>
     {feedback && <p className="booking-feedback" role="status">{feedback}</p>}

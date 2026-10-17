@@ -30,20 +30,30 @@ class StudioService {
         case 200:
           return jsonDecode(utf8.decode(response.bodyBytes));
         case 401:
-          throw const StudioApiException('Please sign in to view studios.');
+          throw const StudioApiException(
+            'The studio service rejected this request. Please refresh and try again.',
+          );
         case 403:
           throw const StudioApiException(
-            'Your account does not have access to these studios.',
+            'You do not have permission to view these studios. Contact support if this continues.',
           );
         case 404:
           throw const StudioApiException(
-            'The requested studio or studio list could not be found.',
+            'The studio list or requested studio could not be found.',
+          );
+        case 408:
+          throw const StudioApiException(
+            'The studio service took too long to respond. Please try again.',
+          );
+        case 429:
+          throw const StudioApiException(
+            'Too many requests. Wait a moment, then try again.',
           );
         default:
           throw StudioApiException(
             response.statusCode >= 500
-                ? 'The studio server is unavailable. Please try again later.'
-                : 'Unable to load studios. Please try again.',
+                ? 'The studio service is temporarily unavailable (${response.statusCode}). Please try again shortly.'
+                : 'The request could not be completed (${response.statusCode}). Please try again.',
           );
       }
     } on TimeoutException {
@@ -52,7 +62,7 @@ class StudioService {
       );
     } on http.ClientException {
       throw const StudioApiException(
-        'Cannot connect to the studio server. Check your connection and try again.',
+        'Could not reach the studio service. Check your internet connection and make sure the API server is running.',
       );
     } on FormatException {
       throw const StudioApiException(
